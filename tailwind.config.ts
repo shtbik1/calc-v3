@@ -1,6 +1,8 @@
-import type { Config } from "tailwindcss";
+/* eslint-disable @typescript-eslint/no-require-imports */
+import type { Config } from "tailwindcss"
 
 export default {
+  darkMode: ["class"],
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,7 +14,12 @@ export default {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
     },
   },
-  plugins: [],
-} satisfies Config;
+  plugins: [require("tailwindcss-animate")],
+} satisfies Config

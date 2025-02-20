@@ -19,7 +19,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${fontSans.variable} min-h-screen antialiased`}>
+      <body
+        className={`${fontSans.variable} min-h-screen bg-pagebg antialiased`}
+      >
         {children}
       </body>
     </html>

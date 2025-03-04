@@ -1,9 +1,21 @@
 "use client"
 
-import { use, useState } from "react"
+import { use, useEffect, useState } from "react"
 
-import { useRouter } from "next/navigation"
+import { MathJax } from "better-react-mathjax"
 
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
 import { getFormula, calculateVariable } from "@/utils/formulas"
 
 const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
@@ -11,16 +23,36 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
   const { id } = params
 
   const formula = getFormula(id)
-  const router = useRouter()
 
   const [values, setValues] = useState<Partial<Record<string, number>>>({})
   const [result, setResult] = useState<number | null>(null)
   const [targetVariable, setTargetVariable] = useState<string>("")
+  const [displayFormula, setDisplayFormula] = useState(false)
 
-  if (!formula) return <div>Формула не найдена</div>
+  useEffect(() => {
+    if (formula?.constants) {
+      // Записываем константы в values при загрузке
+      setValues((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(formula.constants ?? {}).map(([key, { value }]) => [
+            key,
+            value,
+          ]),
+        ),
+      }))
+    }
+
+    setTimeout(() => {
+      setDisplayFormula(true)
+    }, 500)
+  }, [formula])
 
   const handleInputChange = (key: string, value: string) => {
-    setValues((prev) => ({ ...prev, [key]: value ? Number(value) : undefined }))
+    setValues((prev) => ({
+      ...prev,
+      [key]: value ? Number(value) : undefined,
+    }))
   }
 
   const handleCalculate = () => {
@@ -30,49 +62,106 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
     }
 
     try {
-      setResult(calculateVariable(formula.id, values, targetVariable))
+      if (formula) {
+        setResult(calculateVariable(formula.id, values, targetVariable))
+      }
     } catch (error) {
       console.log(error)
       setResult(null)
     }
   }
 
-  return (
-    <div>
-      <h1>{formula.name}</h1>
-      <p>{formula.description}</p>
+  const handleTargetVariableChange = (value: string) => {
+    setTargetVariable(value)
 
-      <label>Выберите переменную для вычисления:</label>
-      <select
-        onChange={(e) => setTargetVariable(e.target.value)}
-        value={targetVariable}
-      >
-        <option value="">Выбрать</option>
-        {formula.variables.map((variable) => (
-          <option key={variable.key} value={variable.key}>
-            {variable.name}
-          </option>
-        ))}
-      </select>
+    setValues((prev) => {
+      const newValues = { ...prev }
+
+      const keys = Object.keys(newValues)
+      if (!formula?.constants) {
+        return {}
+      }
+      keys.map((key) => {
+        if (
+          key in newValues &&
+          formula.constants &&
+          !(key in formula.constants)
+        )
+          delete newValues[key]
+      })
+
+      return newValues
+    })
+  }
+
+  console.log(values)
+
+  if (!formula) return <div>Формула не найдена</div>
+
+  const targetVariableInfo = formula.variables.find(
+    (v) => v.key === targetVariable,
+  )
+
+  return (
+    <div className="max-w-[475px] w-full flex flex-col gap-4">
+      <h1>{formula.name}</h1>
+      <div className="flex gap-4">
+        <p>{formula.description}</p>
+        {!displayFormula && <Skeleton className="w-[200px] h-[24px]" />}
+        {displayFormula && <MathJax>{formula.formulaViewMathJax}</MathJax>}
+      </div>
+
+      <label>Выберите переменную, которую хотите найти:</label>
+      <Select value={targetVariable} onValueChange={handleTargetVariableChange}>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Выберите переменную" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Переменная</SelectLabel>
+            {formula.variables.map((variable) => (
+              <SelectItem key={variable.key} value={variable.key}>
+                {variable.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
+        </SelectContent>
+      </Select>
 
       {formula.variables.map((variable) => (
         <div key={variable.key}>
-          <label>{variable.name}</label>
-          <input
+          <label className="flex gap-2">
+            <MathJax>{`\\(${variable.key}\\)`}</MathJax> - {variable.name}
+          </label>
+          <Input
             type="number"
-            disabled={variable.key === targetVariable}
+            disabled={variable.key === targetVariable || !targetVariable}
+            value={values[variable.key] ?? ""}
             onChange={(e) => handleInputChange(variable.key, e.target.value)}
           />
         </div>
       ))}
 
-      <button onClick={handleCalculate} disabled={!targetVariable}>
+      {formula.constants &&
+        Object.entries(formula.constants).map(([key, constant]) => (
+          <div key={key}>
+            <label className="flex gap-2">
+              <MathJax>{`\\(${key}\\)`}</MathJax> - {constant.name}
+            </label>
+            <Input type="number" value={constant.value} disabled />
+          </div>
+        ))}
+
+      <Button onClick={handleCalculate} disabled={!targetVariable}>
         Рассчитать
-      </button>
+      </Button>
 
-      {result !== null && <p>Результат: {result}</p>}
-
-      <button onClick={() => router.push("/")}>Назад</button>
+      {result !== null && targetVariableInfo && (
+        <p>
+          Результат: {targetVariableInfo.name} = {result}{" "}
+          {targetVariableInfo.unit ?? ""}
+        </p>
+      )}
     </div>
   )
 }

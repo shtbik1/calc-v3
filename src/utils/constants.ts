@@ -8,3 +8,7 @@ export const ROUTES = {
     root: FORMULAS_ROOT,
   },
 }
+
+export const constants = {
+  g: 9.80665,
+}

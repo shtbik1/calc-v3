@@ -7,6 +7,8 @@ export type Formula = {
   formulaViewMathJax: string
   calculate: (values: Partial<Record<string, number>>) => number
   reverse?: Record<string, (values: Partial<Record<string, number>>) => number>
+  units?: Record<string, string[]> // Добавляем units
+  conversionFactors?: Record<string, Record<string, number>> // Добавляем conversionFactors
 }
 
 export const formulas: Record<string, Formula> = {
@@ -15,7 +17,7 @@ export const formulas: Record<string, Formula> = {
     name: "Сила тяжести",
     variables: [
       { key: "F", name: "Сила", unit: "Н" },
-      { key: "m", name: "Масса", unit: "кг" },
+      { key: "m", name: "Масса", unit: "Кг" },
     ],
     constants: {
       g: { name: "Ускорение (м/с²)", value: 9.80665 },
@@ -32,13 +34,30 @@ export const formulas: Record<string, Formula> = {
         return F / 9.80665
       },
     },
+    units: {
+      m: ["Кг", "тонны", "граммы", "мг"],
+      F: ["Н", "КН", "мН"],
+    },
+    conversionFactors: {
+      m: {
+        Кг: 1,
+        тонны: 1000,
+        граммы: 0.001,
+        мг: 0.000001,
+      },
+      F: {
+        Н: 1,
+        КН: 1000,
+        мН: 0.001,
+      },
+    },
   },
   kinetic_energy: {
     id: "kinetic_energy",
     name: "Кинетическая энергия",
     variables: [
       { key: "E", name: "Энергия", unit: "Дж" },
-      { key: "m", name: "Масса", unit: "кг" },
+      { key: "m", name: "Масса", unit: "Кг" },
       { key: "v", name: "Скорость", unit: "м/с" },
     ],
     description: "Формула кинетической энергии",
@@ -60,13 +79,36 @@ export const formulas: Record<string, Formula> = {
         return Math.sqrt((2 * E) / m)
       },
     },
+    units: {
+      E: ["Дж", "кДж", "мДж"],
+      m: ["Кг", "тонны", "граммы", "мг"],
+      v: ["м/с", "км/ч", "миль/ч"],
+    },
+    conversionFactors: {
+      E: {
+        Дж: 1,
+        кДж: 1000,
+        мДж: 0.001,
+      },
+      m: {
+        Кг: 1,
+        тонны: 1000,
+        граммы: 0.001,
+        мг: 0.000001,
+      },
+      v: {
+        "м/с": 1,
+        "км/ч": 0.277778,
+        "миль/ч": 0.44704,
+      },
+    },
   },
   potential_energy: {
     id: "potential_energy",
     name: "Потенциальная энергия",
     variables: [
       { key: "E", name: "Энергия", unit: "Дж" },
-      { key: "m", name: "Масса", unit: "кг" },
+      { key: "m", name: "Масса", unit: "Кг" },
       { key: "h", name: "Высота", unit: "м" },
     ],
     constants: {
@@ -89,6 +131,29 @@ export const formulas: Record<string, Formula> = {
         if (E === undefined || m === undefined)
           throw new Error("Не хватает данных")
         return E / (m * 9.80665)
+      },
+    },
+    units: {
+      E: ["Дж", "кДж", "мДж"],
+      m: ["Кг", "тонны", "граммы", "мг"],
+      h: ["м", "км", "см"],
+    },
+    conversionFactors: {
+      E: {
+        Дж: 1,
+        кДж: 1000,
+        мДж: 0.001,
+      },
+      m: {
+        Кг: 1,
+        тонны: 1000,
+        граммы: 0.001,
+        мг: 0.000001,
+      },
+      h: {
+        м: 1,
+        км: 1000,
+        см: 0.01,
       },
     },
   },
@@ -117,6 +182,28 @@ export const formulas: Record<string, Formula> = {
         if (V === undefined || I === undefined)
           throw new Error("Не хватает данных")
         return V / I
+      },
+    },
+    units: {
+      V: ["В", "кВ", "мВ"],
+      I: ["А", "мА", "кА"],
+      R: ["Ом", "кОм", "мОм"],
+    },
+    conversionFactors: {
+      V: {
+        В: 1,
+        кВ: 1000,
+        мВ: 0.001,
+      },
+      I: {
+        А: 1,
+        мА: 0.001,
+        кА: 1000,
+      },
+      R: {
+        Ом: 1,
+        кОм: 1000,
+        мОм: 0.001,
       },
     },
   },
@@ -153,6 +240,28 @@ export const formulas: Record<string, Formula> = {
         return Math.acos(A / (F * d))
       },
     },
+    units: {
+      A: ["Дж", "кДж", "мДж"],
+      F: ["Н", "КН", "мН"],
+      d: ["м", "км", "см"],
+    },
+    conversionFactors: {
+      A: {
+        Дж: 1,
+        кДж: 1000,
+        мДж: 0.001,
+      },
+      F: {
+        Н: 1,
+        КН: 1000,
+        мН: 0.001,
+      },
+      d: {
+        м: 1,
+        км: 1000,
+        см: 0.01,
+      },
+    },
   },
   power: {
     id: "power",
@@ -179,6 +288,28 @@ export const formulas: Record<string, Formula> = {
         if (P === undefined || A === undefined)
           throw new Error("Не хватает данных")
         return A / P
+      },
+    },
+    units: {
+      P: ["Вт", "кВт", "мВт"],
+      A: ["Дж", "кДж", "мДж"],
+      t: ["с", "мин", "ч"],
+    },
+    conversionFactors: {
+      P: {
+        Вт: 1,
+        кВт: 1000,
+        мВт: 0.001,
+      },
+      A: {
+        Дж: 1,
+        кДж: 1000,
+        мДж: 0.001,
+      },
+      t: {
+        с: 1,
+        мин: 60,
+        ч: 3600,
       },
     },
   },
@@ -209,13 +340,35 @@ export const formulas: Record<string, Formula> = {
         return d / v
       },
     },
+    units: {
+      v: ["м/с", "км/ч", "миль/ч"],
+      d: ["м", "км", "см"],
+      t: ["с", "мин", "ч"],
+    },
+    conversionFactors: {
+      v: {
+        "м/с": 1,
+        "км/ч": 0.277778,
+        "миль/ч": 0.44704,
+      },
+      d: {
+        м: 1,
+        км: 1000,
+        см: 0.01,
+      },
+      t: {
+        с: 1,
+        мин: 60,
+        ч: 3600,
+      },
+    },
   },
   density: {
     id: "density",
     name: "Плотность",
     variables: [
-      { key: "rho", name: "Плотность", unit: "кг/м³" },
-      { key: "m", name: "Масса", unit: "кг" },
+      { key: "rho", name: "Плотность", unit: "Кг/м³" },
+      { key: "m", name: "Масса", unit: "Кг" },
       { key: "V", name: "Объём", unit: "м³" },
     ],
     description: "Формула плотности",
@@ -237,6 +390,28 @@ export const formulas: Record<string, Formula> = {
         return m / rho
       },
     },
+    units: {
+      rho: ["Кг/м³", "г/см³"],
+      m: ["Кг", "тонны", "граммы", "мг"],
+      V: ["м³", "л", "мл"],
+    },
+    conversionFactors: {
+      rho: {
+        "Кг/м³": 1,
+        "г/см³": 1000,
+      },
+      m: {
+        Кг: 1,
+        тонны: 1000,
+        граммы: 0.001,
+        мг: 0.000001,
+      },
+      V: {
+        "м³": 1,
+        л: 0.001,
+        мл: 0.000001,
+      },
+    },
   },
 }
 
@@ -248,22 +423,51 @@ export function calculateVariable(
   formulaId: string,
   knownValues: Partial<Record<string, number>>,
   targetVariable: string,
-) {
+  selectedUnits: Record<string, string>,
+): number {
   const formula = getFormula(formulaId)
   if (!formula) throw new Error("Формула не найдена")
 
-  // Включаем константы в knownValues
+  // Конвертируем значения в базовые единицы измерения
+  const convertedValues: Partial<Record<string, number>> = { ...knownValues }
+
+  for (const key in knownValues) {
+    if (selectedUnits[key] && formula.conversionFactors?.[key]) {
+      const baseUnit = formula.variables.find((v) => v.key === key)?.unit || ""
+      convertedValues[key] = convertValue(
+        knownValues[key]!,
+        selectedUnits[key],
+        baseUnit,
+        key,
+        formula.conversionFactors,
+      )
+    }
+  }
+
+  // Включаем константы в convertedValues
   if (formula.constants) {
     for (const key in formula.constants) {
-      knownValues[key] = formula.constants[key].value
+      convertedValues[key] = formula.constants[key].value
     }
   }
 
   if (targetVariable === formula.variables[0].key) {
-    return formula.calculate(knownValues)
+    return formula.calculate(convertedValues)
   } else if (formula.reverse?.[targetVariable]) {
-    return formula.reverse[targetVariable](knownValues)
+    return formula.reverse[targetVariable](convertedValues)
   }
 
   throw new Error(`Невозможно вычислить ${targetVariable}`)
+}
+
+export const convertValue = (
+  value: number,
+  fromUnit: string,
+  toUnit: string,
+  variableKey: string,
+  conversionFactors: Record<string, Record<string, number>>,
+): number => {
+  const factorFrom = conversionFactors[variableKey][fromUnit]
+  const factorTo = conversionFactors[variableKey][toUnit]
+  return value * (factorFrom / factorTo)
 }

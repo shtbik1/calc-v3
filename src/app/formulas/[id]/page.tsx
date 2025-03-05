@@ -28,6 +28,7 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
   const [result, setResult] = useState<number | null>(null)
   const [targetVariable, setTargetVariable] = useState<string>("")
   const [displayFormula, setDisplayFormula] = useState(false)
+  const [selectedUnits, setSelectedUnits] = useState<Record<string, string>>({})
 
   useEffect(() => {
     if (formula?.constants) {
@@ -55,6 +56,13 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
     }))
   }
 
+  const handleUnitChange = (key: string, unit: string) => {
+    setSelectedUnits((prev) => ({
+      ...prev,
+      [key]: unit,
+    }))
+  }
+
   const handleCalculate = () => {
     if (!targetVariable) {
       setResult(null)
@@ -63,7 +71,13 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
 
     try {
       if (formula) {
-        setResult(calculateVariable(formula.id, values, targetVariable))
+        const res = calculateVariable(
+          formula.id,
+          values,
+          targetVariable,
+          selectedUnits,
+        )
+        setResult(res)
       }
     } catch (error) {
       console.log(error)
@@ -94,8 +108,6 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
     })
   }
 
-  console.log(values)
-
   if (!formula) return <div>Формула не найдена</div>
 
   const targetVariableInfo = formula.variables.find(
@@ -103,7 +115,7 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
   )
 
   return (
-    <div className="max-w-[475px] w-full flex flex-col gap-4">
+    <div className="max-w-[475px] w-full flex flex-col gap-4 p-4">
       <h1>{formula.name}</h1>
       <div className="flex gap-4">
         <p>{formula.description}</p>
@@ -131,14 +143,39 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
       {formula.variables.map((variable) => (
         <div key={variable.key}>
           <label className="flex gap-2">
-            <MathJax>{`\\(${variable.key}\\)`}</MathJax> - {variable.name}
+            {displayFormula && <MathJax>{`\\(${variable.key}\\)`}</MathJax>}
+            {!displayFormula && (
+              <Skeleton className="h-[21px] w-[21px] !rounded-md" />
+            )}{" "}
+            - {variable.name}
           </label>
-          <Input
-            type="number"
-            disabled={variable.key === targetVariable || !targetVariable}
-            value={values[variable.key] ?? ""}
-            onChange={(e) => handleInputChange(variable.key, e.target.value)}
-          />
+          <div className="flex gap-2">
+            <Input
+              type="number"
+              disabled={variable.key === targetVariable || !targetVariable}
+              value={values[variable.key] ?? ""}
+              onChange={(e) => handleInputChange(variable.key, e.target.value)}
+            />
+            <Select
+              disabled={variable.key === targetVariable || !targetVariable}
+              value={selectedUnits[variable.key] || variable.unit}
+              onValueChange={(value) => handleUnitChange(variable.key, value)}
+            >
+              <SelectTrigger className="w-[100px]">
+                <SelectValue placeholder="Единица" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectGroup>
+                  <SelectLabel>Единица</SelectLabel>
+                  {formula.units?.[variable.key]?.map((unit) => (
+                    <SelectItem key={unit} value={unit}>
+                      {unit}
+                    </SelectItem>
+                  ))}
+                </SelectGroup>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       ))}
 
@@ -146,7 +183,11 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
         Object.entries(formula.constants).map(([key, constant]) => (
           <div key={key}>
             <label className="flex gap-2">
-              <MathJax>{`\\(${key}\\)`}</MathJax> - {constant.name}
+              {displayFormula && <MathJax>{`\\(${key}\\)`}</MathJax>}
+              {!displayFormula && (
+                <Skeleton className="h-[21px] w-[21px] !rounded-md" />
+              )}{" "}
+              - {constant.name}
             </label>
             <Input type="number" value={constant.value} disabled />
           </div>

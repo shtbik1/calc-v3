@@ -13,7 +13,7 @@ export type FetchCarsResponse =
   | { success: false; result: ResponseError }
 
 async function fetchFormulas(): Promise<FetchCarsResponse> {
-  const response = await fetch("api/formulas", {
+  const response = await fetch("/api/formulas", {
     method: "GET",
   }).catch((error) => error)
 

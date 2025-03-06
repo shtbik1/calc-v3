@@ -2,9 +2,7 @@
 
 import { useMutation } from "@tanstack/react-query"
 
-import { Formula } from "@/utils/formulas"
-
-type ResponseSuccess = { formulas: Record<string, Formula> }
+type ResponseSuccess = Array<{ name: string; link: string }>
 
 type ResponseError = null
 

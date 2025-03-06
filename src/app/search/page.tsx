@@ -8,25 +8,25 @@ import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useGetFormulas } from "@/hooks/useGetFormulas"
 import { ROUTES } from "@/utils/constants"
-import { Formula } from "@/utils/formulas"
 
 const SearchPage = () => {
   const router = useRouter()
 
   const { mutateAsync: getFormulas, isPending } = useGetFormulas()
 
-  const [formulas, setFormulas] = useState<Record<string, Formula>>({})
+  const [formulas, setFormulas] = useState<
+    Array<{ name: string; link: string }>
+  >([])
   const [searchValue, setSearchValue] = useState<string>("")
-  const [filteredFormulas, setFilteredFormulas] = useState<Array<Formula>>(
-    Object.values(formulas),
-  )
+  const [filteredFormulas, setFilteredFormulas] =
+    useState<Array<{ name: string; link: string }>>(formulas)
 
   const handleSearchValueChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
     setSearchValue(value)
 
     const lowerCaseValue = value.toLowerCase()
-    const filtered = Object.values(formulas).filter((item) =>
+    const filtered = formulas.filter((item) =>
       item.name.toLowerCase().includes(lowerCaseValue),
     )
 
@@ -35,18 +35,18 @@ const SearchPage = () => {
 
   const handleFormulaClick = (
     event: React.MouseEvent<HTMLDivElement>,
-    id: string,
+    link: string,
   ) => {
     event?.stopPropagation()
-    router.push(ROUTES.formulas.root + "/" + id)
+    router.push(ROUTES.formulas.root + "/" + link)
   }
 
   useEffect(() => {
     ;(async () => {
       const res = await getFormulas()
       if (res.success) {
-        setFormulas(res.result.formulas)
-        setFilteredFormulas(Object.values(res.result.formulas))
+        setFormulas(res.result)
+        setFilteredFormulas(res.result)
       }
     })()
   }, [])
@@ -63,14 +63,20 @@ const SearchPage = () => {
         />
       </div>
       <div className="flex max-w-[707px] justify-center gap-4 flex-wrap">
-        {isPending && <Skeleton className="h-14 w-[150px]" />}
+        {isPending && (
+          <>
+            <Skeleton className="h-14 w-[150px]" />
+            <Skeleton className="h-14 w-[150px]" />
+            <Skeleton className="h-14 w-[150px]" />
+          </>
+        )}
         {!isPending &&
           filteredFormulas.length > 0 &&
           filteredFormulas.map((formula) => (
             <div
-              onClick={(event) => handleFormulaClick(event, formula.id)}
+              onClick={(event) => handleFormulaClick(event, formula.link)}
               className="flex h-14 w-[225px] bg-white hover:bg-gray-50 hover:border-gray-400 border rounded-xl p-4 justify-center items-center"
-              key={formula.id}
+              key={formula.link}
             >
               <p>{formula.name}</p>
             </div>

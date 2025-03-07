@@ -19,6 +19,7 @@ async function tryLogin(data: PayloadData): Promise<FetchCarsResponse> {
   const response = await fetch("/api/login", {
     method: "POST",
     body: JSON.stringify(data),
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },

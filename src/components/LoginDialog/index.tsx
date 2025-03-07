@@ -33,7 +33,7 @@ export const LoginDialog = ({
   const handleLoginClick = async () => {
     const res = await tryLogin(userData)
     if (res.success) {
-      console.log(res.result.token)
+      console.log(res.result)
     }
     if (!res.success) {
       console.log(res.result.reason)

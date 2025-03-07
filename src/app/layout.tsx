@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Inter as FontSans } from "next/font/google"
+import { ToastContainer } from "react-toastify"
 
 import "./globals.css"
 import { Header } from "@/components/Header"
@@ -24,6 +25,7 @@ export default function RootLayout({
         className={`${fontSans.variable} min-h-screen bg-pagebg antialiased`}
       >
         <QueryClientProvider client={client}>
+          <ToastContainer position="bottom-center" />
           <Header />
           {children}
         </QueryClientProvider>

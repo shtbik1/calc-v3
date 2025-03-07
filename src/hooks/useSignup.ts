@@ -4,7 +4,7 @@ import { useMutation } from "@tanstack/react-query"
 
 type ResponseSuccess = { token: string }
 
-type ResponseError = { reason: string }
+type ResponseError = { error: string }
 
 export type FetchCarsResponse =
   | { success: true; result: ResponseSuccess }
@@ -16,7 +16,7 @@ type PayloadData = {
 }
 
 async function tryLogin(data: PayloadData): Promise<FetchCarsResponse> {
-  const response = await fetch("/api/login", {
+  const response = await fetch("/api/signup", {
     method: "POST",
     body: JSON.stringify(data),
     credentials: "include",
@@ -34,7 +34,7 @@ async function tryLogin(data: PayloadData): Promise<FetchCarsResponse> {
   return { success: false, result: res }
 }
 
-export const useLogin = () =>
+export const useSignup = () =>
   useMutation({
     mutationFn: (data: PayloadData) => tryLogin(data),
   })

@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useState } from "react"
 
 import { useRouter } from "next/navigation"
 
+import { FormulaHolder } from "@/components/FormulaHolder"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useGetFormulas } from "@/hooks/useGetFormulas"
@@ -18,9 +19,12 @@ const SearchPage = () => {
     Array<{ name: string; link: string }>
   >([])
   const [searchValue, setSearchValue] = useState<string>("")
-  const [filteredFormulas, setFilteredFormulas] =
-    useState<Array<{ name: string; link: string }>>(formulas)
+  const [filteredFormulas, setFilteredFormulas] = useState<
+    Array<{ name: string; link: string }>
+  >([])
+  const [favoriteFormulas, setFavoriteFormulas] = useState<string[]>([]) // Массив для хранения избранных формул
 
+  // Обработчик изменения поискового запроса
   const handleSearchValueChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
     setSearchValue(value)
@@ -30,9 +34,12 @@ const SearchPage = () => {
       item.name.toLowerCase().includes(lowerCaseValue),
     )
 
-    setFilteredFormulas(filtered)
+    // Применяем сортировку с учетом избранных формул
+    const sortedFiltered = sortFormulasWithFavorites(filtered, favoriteFormulas)
+    setFilteredFormulas(sortedFiltered)
   }
 
+  // Обработчик клика по формуле
   const handleFormulaClick = (
     event: React.MouseEvent<HTMLDivElement>,
     link: string,
@@ -41,15 +48,56 @@ const SearchPage = () => {
     router.push(ROUTES.formulas.root + "/" + link)
   }
 
+  // Обработчик добавления формулы в избранное
+  const handleFavoriteClick = (
+    event: React.MouseEvent<HTMLDivElement>,
+    link: string,
+  ) => {
+    event.stopPropagation()
+    setFavoriteFormulas((prev) => {
+      // Если формула уже в избранном, удаляем её
+      if (prev.includes(link)) {
+        return prev.filter((item) => item !== link)
+      }
+      // Иначе добавляем в начало массива
+      return [link, ...prev]
+    })
+  }
+
+  // Функция для сортировки формул с учетом избранных
+  const sortFormulasWithFavorites = (
+    formulasTemp: Array<{ name: string; link: string }>,
+    favorites: string[],
+  ) => {
+    const favoriteFormulasList = favorites
+      .map((link) => formulasTemp.find((formula) => formula.link === link))
+      .filter(Boolean) as Array<{ name: string; link: string }>
+
+    const nonFavoriteFormulas = formulasTemp.filter(
+      (formula) => !favorites.includes(formula.link),
+    )
+
+    return [...favoriteFormulasList, ...nonFavoriteFormulas]
+  }
+
+  // Загрузка формул при монтировании компонента
   useEffect(() => {
     ;(async () => {
       const res = await getFormulas()
       if (res.success) {
         setFormulas(res.result)
-        setFilteredFormulas(res.result)
+        setFilteredFormulas(
+          sortFormulasWithFavorites(res.result, favoriteFormulas),
+        )
       }
     })()
   }, [])
+
+  // Сортировка формул при изменении избранного
+  useEffect(() => {
+    const sortedFormulas = sortFormulasWithFavorites(formulas, favoriteFormulas)
+    setFilteredFormulas(sortedFormulas)
+  }, [favoriteFormulas, formulas])
 
   return (
     <div className="w-full flex flex-col items-center gap-4 justify-center p-4">
@@ -73,13 +121,13 @@ const SearchPage = () => {
         {!isPending &&
           filteredFormulas.length > 0 &&
           filteredFormulas.map((formula) => (
-            <div
-              onClick={(event) => handleFormulaClick(event, formula.link)}
-              className="flex h-14 w-[225px] bg-white hover:bg-gray-50 hover:border-gray-400 border rounded-xl p-4 justify-center items-center"
+            <FormulaHolder
               key={formula.link}
-            >
-              <p>{formula.name}</p>
-            </div>
+              formula={formula}
+              handleFormulaClick={handleFormulaClick}
+              handleFavoriteClick={handleFavoriteClick}
+              isFavorite={favoriteFormulas.includes(formula.link)} // Передаем состояние избранного
+            />
           ))}
       </div>
     </div>

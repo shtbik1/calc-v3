@@ -1,5 +1,7 @@
 import { Dispatch, SetStateAction, useState } from "react"
 
+import { toast } from "react-toastify"
+
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -11,7 +13,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useLogin } from "@/hooks/useLogin"
+import { useSignin } from "@/hooks/useSignin"
+import { useSignup } from "@/hooks/useSignup"
 
 export const LoginDialog = ({
   open,
@@ -20,7 +23,10 @@ export const LoginDialog = ({
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
 }) => {
-  const { mutateAsync: tryLogin, isPending: loginPending } = useLogin()
+  const { mutateAsync: tryLogin, isPending: loginPending } = useSignin()
+  const { mutateAsync: tryReg, isPending: regPending } = useSignup()
+
+  const [task, setTask] = useState<"signin" | "signup">("signin")
 
   const [userData, setUserData] = useState<{ login: string; password: string }>(
     { login: "", password: "" },
@@ -30,17 +36,49 @@ export const LoginDialog = ({
     setUserData((prev) => ({ ...prev, [key]: value }))
   }
 
-  const handleLoginClick = async () => {
+  const handleLogin = async () => {
     const res = await tryLogin(userData)
     if (res.success) {
-      console.log(res.result)
+      toast("Успешный вход")
+      setOpen(false)
     }
-    if (!res.success) {
-      console.log(res.result.reason)
+
+    if (!res.success && res.result.error === "password") {
+      toast("Неверный пароль")
+    }
+    if (!res.success && res.result.error === "missing") {
+      toast("Пользователь не найден")
     }
   }
 
-  const buttonDisabled = !userData.login || !userData.password || loginPending
+  const handleSignup = async () => {
+    const res = await tryReg(userData)
+    if (res.success) {
+      toast("Успешная регистрация")
+      setOpen(false)
+    }
+    if (!res.success && res.result.error === "duplicate") {
+      toast("Пользователь с таким логином уже существует")
+    }
+  }
+
+  const handleLoginClick = async () => {
+    switch (task) {
+      case "signin":
+        await handleLogin()
+        break
+      case "signup":
+        await handleSignup()
+        break
+    }
+  }
+
+  const handleChangeTask = () => {
+    setTask(task === "signin" ? "signup" : "signin")
+  }
+
+  const buttonDisabled =
+    !userData.login || !userData.password || loginPending || regPending
 
   return (
     <Dialog open={open} onOpenChange={() => setOpen(!open)}>
@@ -49,7 +87,9 @@ export const LoginDialog = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Войти в аккаунт</DialogTitle>
+          <DialogTitle>
+            {task === "signin" ? "Вход " : "Регистрация"}
+          </DialogTitle>
         </DialogHeader>
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
@@ -76,11 +116,17 @@ export const LoginDialog = ({
           </div>
         </div>
         <DialogFooter className="w-full !justify-between">
-          <Button variant="link" className="flex flex-col gap-2 p-1">
-            Нет аккаунта? Регистрация
+          <Button
+            onClick={handleChangeTask}
+            variant="link"
+            className="flex flex-col gap-2 p-1"
+          >
+            {task === "signin"
+              ? "Нет аккаунта? Регистрация"
+              : "Есть аккаунт? Войти"}
           </Button>
           <Button disabled={buttonDisabled} onClick={handleLoginClick}>
-            Войти
+            {task === "signin" ? "Войти" : "Регистрация"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -20,3 +20,6 @@ export const constants = {
 export const COOKIE_KEYS = {
   token: "token",
 }
+
+export const publicKey = process.env.NEXT_RSA_PUBLIC_KEY_DELETE || ""
+export const privateKey = process.env.NEXT_RSA_PRIVATE_KEY_DELETE || ""

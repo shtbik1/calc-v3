@@ -62,7 +62,7 @@ export const Header = () => {
 
   return (
     <div
-      className={`p-4 h-[72px] flex justify-between ${!displayButton && "flex-row-reverse"}`}
+      className={`${pathname.includes("eds") ? "hidden" : ""} p-4 h-[72px] flex justify-between ${!displayButton && "flex-row-reverse"}`}
     >
       {displayButton && <Button onClick={buttonOnClick}>Назад</Button>}
       {!isLogin && <LoginDialog open={isLoginOpen} setOpen={setIsLoginOpen} />}

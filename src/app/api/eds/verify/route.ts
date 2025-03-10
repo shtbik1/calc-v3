@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server"
+import crypto from "crypto"
+
+import { NextRequest, NextResponse } from "next/server"
 import NodeRSA from "node-rsa"
 
 import { publicKey } from "@/utils/constants"
 
-// ЭЦП
-
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const { message, signature } = await request.json()
 
@@ -18,19 +18,14 @@ export async function POST(request: Request) {
 
     const key = new NodeRSA(publicKey)
 
-    // Преобразуем сообщение в Buffer
-    const messageBuffer = Buffer.from(message, "utf8")
+    const hash = crypto.createHash("sha256").update(message).digest()
 
-    // Верификация подписи
-    const isValid = key.verify(messageBuffer, signature, "utf8", "base64")
-
-    // Дополнительная информация
-    const calculatedHash = key.encrypt(messageBuffer, "base64") // Хэш сообщения
+    const isValid = key.verify(hash, signature, "buffer", "base64")
 
     return NextResponse.json({
       isValid,
-      calculatedHash,
-      message: "Верификация завершена",
+      message,
+      calculatedHash: Buffer.from(hash).toString("hex"),
     })
   } catch (error) {
     console.error("Ошибка при верификации:", error)

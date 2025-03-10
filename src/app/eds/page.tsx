@@ -1,16 +1,11 @@
-// ЭЦП
-
 "use client"
-import { useEffect, useState } from "react"
 
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
 export default function EDS() {
-  const router = useRouter()
-
   const [message, setMessage] = useState("")
   const [signature, setSignature] = useState("")
   const [publicKey, setPublicKey] = useState("")
@@ -21,6 +16,7 @@ export default function EDS() {
   const [verificationDetails, setVerificationDetails] = useState<{
     calculatedHash?: string
     error?: string
+    message?: string // Добавляем поле для сообщения
   }>({})
 
   const handleSign = async () => {
@@ -34,6 +30,8 @@ export default function EDS() {
     const data = await response.json()
     setSignature(data.signature)
   }
+
+  console.log(verificationDetails)
 
   const handleVerify = async () => {
     try {
@@ -56,6 +54,7 @@ export default function EDS() {
         setVerificationResult(data.isValid)
         setVerificationDetails({
           calculatedHash: data.calculatedHash,
+          message: data.message, // Показываем сообщение
         })
       }
     } catch (error) {
@@ -109,6 +108,9 @@ export default function EDS() {
               <p style={{ color: "red" }}>
                 Ошибка: {verificationDetails.error}
               </p>
+            )}
+            {verificationDetails.message && (
+              <p>Сообщение: {verificationDetails.message}</p>
             )}
             {verificationDetails.calculatedHash && (
               <p>Вычисленный хэш: {verificationDetails.calculatedHash}</p>

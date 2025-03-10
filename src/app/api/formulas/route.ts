@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { supabase } from "@/utils/superbaseUser"
+import { supabase } from "@/utils/supabaseUser"
 
 export async function GET() {
   const { data, error } = await supabase

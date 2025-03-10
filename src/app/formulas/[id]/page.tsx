@@ -80,7 +80,6 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
         setResult(res)
       }
     } catch (error) {
-      console.log(error)
       setResult(null)
     }
   }

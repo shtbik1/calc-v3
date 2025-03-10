@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from "react"
+import { Dispatch, SetStateAction } from "react"
 
 import Cookies from "js-cookie"
 
@@ -24,6 +24,8 @@ export const ProfileDialog = ({
   const handleLogout = () => {
     Cookies.remove(COOKIE_KEYS.token)
     setOpen(false)
+    window.location.reload()
+    return
   }
 
   return (

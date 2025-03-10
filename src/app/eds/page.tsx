@@ -31,8 +31,6 @@ export default function EDS() {
     setSignature(data.signature)
   }
 
-  console.log(verificationDetails)
-
   const handleVerify = async () => {
     try {
       const response = await fetch("/api/eds/verify", {

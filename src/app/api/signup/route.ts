@@ -2,7 +2,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { NextResponse } from "next/server"
 
-import { supabaseServ } from "@/utils/superbaseUser"
+import { supabaseServ } from "@/utils/supabaseUser"
 
 export async function POST(req: Request) {
   const body = await req.json()

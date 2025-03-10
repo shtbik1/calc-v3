@@ -4,27 +4,26 @@ import { useMutation } from "@tanstack/react-query"
 
 import { API_ROUTES } from "@/utils/constants"
 
-type ResponseSuccess = { token: string }
+type ResponseSuccess = Array<{ name: string; link: string }>
 
-type ResponseError = { error: string }
+type ResponseError = null
 
 export type FetchCarsResponse =
   | { success: true; result: ResponseSuccess }
   | { success: false; result: ResponseError }
 
 type PayloadData = {
-  login: string
-  password: string
+  formulaLink: string
 }
 
-async function tryLogin(data: PayloadData): Promise<FetchCarsResponse> {
-  const response = await fetch(API_ROUTES.auth.signin, {
+async function sendFavorite(data: PayloadData): Promise<FetchCarsResponse> {
+  const response = await fetch(API_ROUTES.formulas.addFavorite, {
     method: "POST",
-    body: JSON.stringify(data),
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "same-origin",
+    body: JSON.stringify({ formulaLink: data.formulaLink }),
   }).catch((error) => error)
 
   const res = response.json ? await response.json().catch((e: Error) => e) : {}
@@ -33,10 +32,10 @@ async function tryLogin(data: PayloadData): Promise<FetchCarsResponse> {
     return { success: true, result: res }
   }
 
-  return { success: false, result: res }
+  return { success: false, result: null }
 }
 
-export const useSignin = () =>
+export const useSendFavorite = () =>
   useMutation({
-    mutationFn: (data: PayloadData) => tryLogin(data),
+    mutationFn: (data: PayloadData) => sendFavorite(data),
   })

@@ -41,6 +41,8 @@ export const LoginDialog = ({
     if (res.success) {
       toast("Успешный вход")
       setOpen(false)
+      window.location.reload()
+      return
     }
 
     if (!res.success && res.result.error === "password") {

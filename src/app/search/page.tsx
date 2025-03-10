@@ -2,18 +2,28 @@
 
 import { ChangeEvent, useEffect, useState } from "react"
 
+import Cookies from "js-cookie"
 import { useRouter } from "next/navigation"
+import { toast } from "react-toastify"
 
 import { FormulaHolder } from "@/components/FormulaHolder"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useDeleteFavorite } from "@/hooks/useDeleteFavorite"
+import { useGetFavorite } from "@/hooks/useGetFavorite"
 import { useGetFormulas } from "@/hooks/useGetFormulas"
-import { ROUTES } from "@/utils/constants"
+import { useSendFavorite } from "@/hooks/useSendFavorite"
+import { COOKIE_KEYS, ROUTES } from "@/utils/constants"
 
 const SearchPage = () => {
   const router = useRouter()
 
-  const { mutateAsync: getFormulas, isPending } = useGetFormulas()
+  const { mutateAsync: getFormulas, isPending: getFormulasPending } =
+    useGetFormulas()
+  const { mutateAsync: sendFav, isPending: sendFavPending } = useSendFavorite()
+  const { mutateAsync: getFav, isPending: getFavPending } = useGetFavorite()
+  const { mutateAsync: deleteFav, isPending: deleteFavPending } =
+    useDeleteFavorite()
 
   const [formulas, setFormulas] = useState<
     Array<{ name: string; link: string }>
@@ -22,9 +32,10 @@ const SearchPage = () => {
   const [filteredFormulas, setFilteredFormulas] = useState<
     Array<{ name: string; link: string }>
   >([])
-  const [favoriteFormulas, setFavoriteFormulas] = useState<string[]>([]) // Массив для хранения избранных формул
+  const [favoriteFormulas, setFavoriteFormulas] = useState<string[]>([])
 
-  // Обработчик изменения поискового запроса
+  const isPending = getFormulasPending || getFavPending
+
   const handleSearchValueChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
     setSearchValue(value)
@@ -34,12 +45,10 @@ const SearchPage = () => {
       item.name.toLowerCase().includes(lowerCaseValue),
     )
 
-    // Применяем сортировку с учетом избранных формул
     const sortedFiltered = sortFormulasWithFavorites(filtered, favoriteFormulas)
     setFilteredFormulas(sortedFiltered)
   }
 
-  // Обработчик клика по формуле
   const handleFormulaClick = (
     event: React.MouseEvent<HTMLDivElement>,
     link: string,
@@ -48,23 +57,48 @@ const SearchPage = () => {
     router.push(ROUTES.formulas.root + "/" + link)
   }
 
-  // Обработчик добавления формулы в избранное
-  const handleFavoriteClick = (
+  const handleFavoriteClick = async (
     event: React.MouseEvent<HTMLDivElement>,
     link: string,
   ) => {
     event.stopPropagation()
-    setFavoriteFormulas((prev) => {
-      // Если формула уже в избранном, удаляем её
-      if (prev.includes(link)) {
-        return prev.filter((item) => item !== link)
+
+    const isFavorite = favoriteFormulas.includes(link)
+
+    if (isFavorite) {
+      const res = await deleteFav({ formulaLink: link })
+      if (res.success) {
+        setFavoriteFormulas((prev) => prev.filter((item) => item !== link))
+        toast.success("Формула удалена из избранного")
       }
-      // Иначе добавляем в начало массива
-      return [link, ...prev]
-    })
+      if (!res.success) {
+        if (res.result === "unauthorized") {
+          {
+            toast.error("Необходимо авторизоваться")
+            return
+          }
+        }
+        toast.error("Произошла ошибка при удалении формулы")
+      }
+    }
+    if (!isFavorite) {
+      const res = await sendFav({ formulaLink: link })
+      if (res.success) {
+        setFavoriteFormulas((prev) => [link, ...prev])
+        toast.success("Формула добавлена в избранное")
+      }
+      if (!res.success) {
+        if (res.result === "unauthorized") {
+          {
+            toast.error("Необходимо авторизоваться")
+            return
+          }
+        }
+        toast.error("Произошла ошибка при добавлении формулы")
+      }
+    }
   }
 
-  // Функция для сортировки формул с учетом избранных
   const sortFormulasWithFavorites = (
     formulasTemp: Array<{ name: string; link: string }>,
     favorites: string[],
@@ -80,7 +114,6 @@ const SearchPage = () => {
     return [...favoriteFormulasList, ...nonFavoriteFormulas]
   }
 
-  // Загрузка формул при монтировании компонента
   useEffect(() => {
     ;(async () => {
       const res = await getFormulas()
@@ -93,7 +126,22 @@ const SearchPage = () => {
     })()
   }, [])
 
-  // Сортировка формул при изменении избранного
+  useEffect(() => {
+    ;(async () => {
+      if (Cookies.get(COOKIE_KEYS.token)) {
+        const res = await getFav()
+        if (res.success) {
+          const likedFormulas = Object.keys(
+            res.result.existingData.liked_formulas,
+          )
+          setFavoriteFormulas(likedFormulas)
+        } else {
+          setFavoriteFormulas([])
+        }
+      }
+    })()
+  }, [])
+
   useEffect(() => {
     const sortedFormulas = sortFormulasWithFavorites(formulas, favoriteFormulas)
     setFilteredFormulas(sortedFormulas)
@@ -122,11 +170,12 @@ const SearchPage = () => {
           filteredFormulas.length > 0 &&
           filteredFormulas.map((formula) => (
             <FormulaHolder
+              disabled={isPending || sendFavPending}
               key={formula.link}
               formula={formula}
               handleFormulaClick={handleFormulaClick}
               handleFavoriteClick={handleFavoriteClick}
-              isFavorite={favoriteFormulas.includes(formula.link)} // Передаем состояние избранного
+              isFavorite={favoriteFormulas.includes(formula.link)}
             />
           ))}
       </div>

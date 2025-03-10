@@ -46,9 +46,11 @@ export const Header = () => {
 
           if (decodedToken.exp > currentTime) {
             setIsLogin(true)
+            return
           } else {
             setIsLogin(false)
             Cookies.remove("token")
+            return
           }
         }
       } catch (error) {

@@ -13,6 +13,20 @@ export const ROUTES = {
   },
 }
 
+export const API = "/api"
+export const API_ROUTES = {
+  auth: {
+    signup: `${API}/signup`,
+    signin: `${API}/signin`,
+  },
+  formulas: {
+    getFormulas: `${API}/formulas`,
+    addFavorite: `${API}/formulas/add-favorite`,
+    getFavorite: `${API}/formulas/get-favorite`,
+    deleteFavorite: `${API}/formulas/delete-favorite`,
+  },
+}
+
 export const constants = {
   g: 9.80665,
 }

@@ -76,5 +76,5 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  return NextResponse
+  return NextResponse.json({})
 }

@@ -116,8 +116,10 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
 
   useEffect(() => {
     ;(async () => {
-      const res = await sendHistory({ formulaLink: formula?.id as string })
-      console.log(res)
+      await sendHistory({
+        formulaLink: formula?.id as string,
+        formulaName: formula?.name as string,
+      })
     })()
   }, [])
 

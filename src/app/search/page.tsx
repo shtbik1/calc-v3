@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux"
 import { toast } from "react-toastify"
 
 import { FormulaHolder } from "@/components/FormulaHolder"
+import { HistoryViewer } from "@/components/HistoryView"
 import { Input } from "@/components/ui/input"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDeleteFavorite } from "@/hooks/useDeleteFavorite"
@@ -200,13 +201,15 @@ const SearchPage = () => {
             <FormulaHolder
               disabled={isPending || sendFavPending}
               key={formula.link}
-              formula={formula}
+              formulaLink={formula.link}
+              formulaName={formula.name}
               handleFormulaClick={handleFormulaClick}
               handleFavoriteClick={handleFavoriteClick}
               isFavorite={favoriteFormulas.includes(formula.link)}
             />
           ))}
       </div>
+      <HistoryViewer />
     </div>
   )
 }

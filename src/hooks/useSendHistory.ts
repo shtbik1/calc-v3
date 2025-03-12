@@ -14,6 +14,7 @@ type FetchSendHistoryResponse =
 
 type PayloadData = {
   formulaLink: string
+  formulaName: string
 }
 
 async function sendHistory(
@@ -25,7 +26,10 @@ async function sendHistory(
       "Content-Type": "application/json",
     },
     credentials: "same-origin",
-    body: JSON.stringify({ formulaLink: data.formulaLink }),
+    body: JSON.stringify({
+      formulaLink: data.formulaLink,
+      formulaName: data.formulaName,
+    }),
   }).catch((error) => error)
 
   const res = response.json ? await response.json().catch((e: Error) => e) : {}

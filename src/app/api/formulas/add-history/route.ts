@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_token" }, { status: 401 })
   }
 
-  const { formulaLink } = await request.json()
+  const { formulaLink, formulaName } = await request.json()
 
   const { data: existingData, error: fetchError } = await supabaseServ
     .from("history")
@@ -33,13 +33,18 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
-  let updatedFormulas: { [key: string]: string } = {}
+  let updatedFormulas: {
+    [key: string]: { formulaName: string; addedAt: string }
+  } = {}
 
   if (existingData && existingData.history_formulas) {
     updatedFormulas = { ...existingData.history_formulas }
   }
 
-  updatedFormulas[formulaLink] = new Date().toISOString()
+  updatedFormulas[formulaLink] = {
+    formulaName,
+    addedAt: new Date().toISOString(),
+  }
 
   const { error: upsertError } = await supabaseServ.from("history").upsert(
     {

@@ -4,7 +4,9 @@ import { useMutation } from "@tanstack/react-query"
 
 import { API_ROUTES } from "@/utils/constants"
 
-type ResponseSuccess = { history: { [key: string]: Date } | {} }
+type ResponseSuccess = {
+  history: { [key: string]: { addedAt: string; formulaName: string } } | {}
+}
 
 type ResponseError = { error: string }
 

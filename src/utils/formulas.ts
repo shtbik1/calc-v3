@@ -7,8 +7,8 @@ export type Formula = {
   formulaViewMathJax: string
   calculate: (values: Partial<Record<string, number>>) => number
   reverse?: Record<string, (values: Partial<Record<string, number>>) => number>
-  units?: Record<string, string[]> // Добавляем units
-  conversionFactors?: Record<string, Record<string, number>> // Добавляем conversionFactors
+  units?: Record<string, string[]>
+  conversionFactors?: Record<string, Record<string, number>>
 }
 
 export const formulas: Record<string, Formula> = {
@@ -428,7 +428,6 @@ export function calculateVariable(
   const formula = getFormula(formulaId)
   if (!formula) throw new Error("Формула не найдена")
 
-  // Конвертируем значения в базовые единицы измерения
   const convertedValues: Partial<Record<string, number>> = { ...knownValues }
 
   for (const key in knownValues) {
@@ -444,7 +443,6 @@ export function calculateVariable(
     }
   }
 
-  // Включаем константы в convertedValues
   if (formula.constants) {
     for (const key in formula.constants) {
       convertedValues[key] = formula.constants[key].value

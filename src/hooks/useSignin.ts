@@ -4,11 +4,14 @@ import { useMutation } from "@tanstack/react-query"
 
 import { API_ROUTES } from "@/utils/constants"
 
-type ResponseSuccess = { token: string }
+type ResponseSuccess = {
+  user: { login: string }
+  token: string
+}
 
 type ResponseError = { error: string }
 
-export type FetchCarsResponse =
+type FetchTryLoginResponse =
   | { success: true; result: ResponseSuccess }
   | { success: false; result: ResponseError }
 
@@ -17,7 +20,7 @@ type PayloadData = {
   password: string
 }
 
-async function tryLogin(data: PayloadData): Promise<FetchCarsResponse> {
+async function tryLogin(data: PayloadData): Promise<FetchTryLoginResponse> {
   const response = await fetch(API_ROUTES.auth.signin, {
     method: "POST",
     body: JSON.stringify(data),

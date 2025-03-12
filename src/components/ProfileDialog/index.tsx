@@ -1,6 +1,9 @@
+"use client"
+
 import { Dispatch, SetStateAction } from "react"
 
 import Cookies from "js-cookie"
+import { useDispatch } from "react-redux"
 
 import ProfileIcon from "@/assets/icons/profile_icon.svg"
 import { Button } from "@/components/ui/button"
@@ -12,6 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
+import { setAuthToken } from "@/store/slices/authSlice"
 import { COOKIE_KEYS } from "@/utils/constants"
 
 export const ProfileDialog = ({
@@ -21,11 +25,11 @@ export const ProfileDialog = ({
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
 }) => {
+  const dispath = useDispatch()
   const handleLogout = () => {
     Cookies.remove(COOKIE_KEYS.token)
+    dispath(setAuthToken(null))
     setOpen(false)
-    window.location.reload()
-    return
   }
 
   return (

@@ -6,13 +6,13 @@ import { API_ROUTES } from "@/utils/constants"
 
 type ResponseSuccess = { existingData: { [key: string]: true } }
 
-type ResponseError = null
+type ResponseError = { error: string }
 
-export type FetchCarsResponse =
+type FetchGetFavoriteResponse =
   | { success: true; result: ResponseSuccess }
   | { success: false; result: ResponseError }
 
-async function getFavorite(): Promise<FetchCarsResponse> {
+async function getFavorite(): Promise<FetchGetFavoriteResponse> {
   const response = await fetch(API_ROUTES.formulas.getFavorite, {
     method: "GET",
 
@@ -25,7 +25,7 @@ async function getFavorite(): Promise<FetchCarsResponse> {
     return { success: true, result: res }
   }
 
-  return { success: false, result: null }
+  return { success: false, result: res }
 }
 
 export const useGetFavorite = () =>

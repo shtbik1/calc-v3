@@ -16,7 +16,7 @@ export default function EDS() {
   const [verificationDetails, setVerificationDetails] = useState<{
     calculatedHash?: string
     error?: string
-    message?: string // Добавляем поле для сообщения
+    message?: string
   }>({})
 
   const handleSign = async () => {
@@ -52,7 +52,7 @@ export default function EDS() {
         setVerificationResult(data.isValid)
         setVerificationDetails({
           calculatedHash: data.calculatedHash,
-          message: data.message, // Показываем сообщение
+          message: data.message,
         })
       }
     } catch (error) {

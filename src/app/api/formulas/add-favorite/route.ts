@@ -11,20 +11,14 @@ const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 export async function POST(request: NextRequest) {
   const cookie = request.cookies.get(COOKIE_KEYS.token)
   if (!cookie || !cookie.value) {
-    return NextResponse.json(
-      { success: false, error: "unauthorized" },
-      { status: 403 },
-    )
+    return NextResponse.json({ error: "unauthorized" }, { status: 403 })
   }
 
   let decoded: JwtData
   try {
     decoded = jwt.verify(cookie.value, SECRET_JWT) as JwtData
   } catch (error) {
-    return NextResponse.json(
-      { success: false, error: "invalid_token" },
-      { status: 401 },
-    )
+    return NextResponse.json({ error: "invalid_token" }, { status: 401 })
   }
 
   const { formulaLink } = await request.json()
@@ -36,10 +30,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (fetchError && fetchError.code !== "PGRST116") {
-    return NextResponse.json(
-      { success: false, error: fetchError.message },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
   let updatedFormulas: { [key: string]: boolean } = {}
@@ -60,10 +51,7 @@ export async function POST(request: NextRequest) {
   )
 
   if (upsertError) {
-    return NextResponse.json(
-      { success: false, error: upsertError.message },
-      { status: 500 },
-    )
+    return NextResponse.json({ error: upsertError.message }, { status: 500 })
   }
 
   return NextResponse.json({})

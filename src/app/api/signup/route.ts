@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
   const token = jwt.sign({ login: body.login }, SECRET_JWT, { expiresIn: "7d" })
 
-  const response = NextResponse.json({ success: true, user: newUser })
+  const response = NextResponse.json({ user: newUser, token })
   response.headers.append(
     "Set-Cookie",
     `token=${token}; Path=/; Secure; SameSite=Strict; Max-Age=${7 * 24 * 60 * 60}`,

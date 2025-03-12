@@ -4,11 +4,11 @@ import { useMutation } from "@tanstack/react-query"
 
 import { API_ROUTES } from "@/utils/constants"
 
-type ResponseSuccess = Array<{ name: string; link: string }>
+type ResponseSuccess = null
 
 type ResponseError = { error: string }
 
-type FetchSendFavoriteResponse =
+type FetchSendHistoryResponse =
   | { success: true; result: ResponseSuccess }
   | { success: false; result: ResponseError }
 
@@ -16,10 +16,10 @@ type PayloadData = {
   formulaLink: string
 }
 
-async function sendFavorite(
+async function sendHistory(
   data: PayloadData,
-): Promise<FetchSendFavoriteResponse> {
-  const response = await fetch(API_ROUTES.formulas.addFavorite, {
+): Promise<FetchSendHistoryResponse> {
+  const response = await fetch(API_ROUTES.formulas.addHistory, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -37,7 +37,7 @@ async function sendFavorite(
   return { success: false, result: res }
 }
 
-export const useSendFavorite = () =>
+export const useSendHistory = () =>
   useMutation({
-    mutationFn: (data: PayloadData) => sendFavorite(data),
+    mutationFn: (data: PayloadData) => sendHistory(data),
   })

@@ -20,6 +20,8 @@ export const API_ROUTES = {
     signin: `${API}/signin`,
   },
   formulas: {
+    addHistory: `${API}/formulas/add-history`,
+    getHistory: `${API}/formulas/get-history`,
     getFormulas: `${API}/formulas`,
     addFavorite: `${API}/formulas/add-favorite`,
     getFavorite: `${API}/formulas/get-favorite`,
@@ -30,6 +32,8 @@ export const API_ROUTES = {
 export const constants = {
   g: 9.80665,
 }
+
+export const LOCALSTORAGE_KEYS = {}
 
 export const COOKIE_KEYS = {
   token: "token",

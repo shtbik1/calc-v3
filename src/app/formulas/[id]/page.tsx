@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
+import { useSendHistory } from "@/hooks/useSendHistory"
 import { getFormula, calculateVariable } from "@/utils/formulas"
 
 const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
@@ -24,30 +25,14 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
 
   const formula = getFormula(id)
 
+  const { mutateAsync: sendHistory, isPending: sendHistoryPending } =
+    useSendHistory()
+
   const [values, setValues] = useState<Partial<Record<string, number>>>({})
   const [result, setResult] = useState<number | null>(null)
   const [targetVariable, setTargetVariable] = useState<string>("")
   const [displayFormula, setDisplayFormula] = useState(false)
   const [selectedUnits, setSelectedUnits] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    if (formula?.constants) {
-      // Записываем константы в values при загрузке
-      setValues((prev) => ({
-        ...prev,
-        ...Object.fromEntries(
-          Object.entries(formula.constants ?? {}).map(([key, { value }]) => [
-            key,
-            value,
-          ]),
-        ),
-      }))
-    }
-
-    setTimeout(() => {
-      setDisplayFormula(true)
-    }, 500)
-  }, [formula])
 
   const handleInputChange = (key: string, value: string) => {
     setValues((prev) => ({
@@ -107,11 +92,36 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
     })
   }
 
-  if (!formula) return <div>Формула не найдена</div>
-
-  const targetVariableInfo = formula.variables.find(
+  const targetVariableInfo = formula?.variables.find(
     (v) => v.key === targetVariable,
   )
+
+  useEffect(() => {
+    if (formula?.constants) {
+      setValues((prev) => ({
+        ...prev,
+        ...Object.fromEntries(
+          Object.entries(formula.constants ?? {}).map(([key, { value }]) => [
+            key,
+            value,
+          ]),
+        ),
+      }))
+    }
+
+    setTimeout(() => {
+      setDisplayFormula(true)
+    }, 500)
+  }, [formula])
+
+  useEffect(() => {
+    ;(async () => {
+      const res = await sendHistory({ formulaLink: formula?.id as string })
+      console.log(res)
+    })()
+  }, [])
+
+  if (!formula) return <div>Формула не найдена</div>
 
   return (
     <div className="max-w-[475px] w-full flex flex-col gap-4 p-4">

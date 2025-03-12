@@ -1,5 +1,6 @@
 import { Dispatch, SetStateAction, useState } from "react"
 
+import { useDispatch } from "react-redux"
 import { toast } from "react-toastify"
 
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useSignin } from "@/hooks/useSignin"
 import { useSignup } from "@/hooks/useSignup"
+import { setAuthToken } from "@/store/slices/authSlice"
 
 export const LoginDialog = ({
   open,
@@ -23,6 +25,7 @@ export const LoginDialog = ({
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
 }) => {
+  const dispatch = useDispatch()
   const { mutateAsync: tryLogin, isPending: loginPending } = useSignin()
   const { mutateAsync: tryReg, isPending: regPending } = useSignup()
 
@@ -39,10 +42,9 @@ export const LoginDialog = ({
   const handleLogin = async () => {
     const res = await tryLogin(userData)
     if (res.success) {
+      dispatch(setAuthToken(res.result.token))
       toast("Успешный вход")
       setOpen(false)
-      window.location.reload()
-      return
     }
 
     if (!res.success && res.result.error === "password") {
@@ -56,6 +58,7 @@ export const LoginDialog = ({
   const handleSignup = async () => {
     const res = await tryReg(userData)
     if (res.success) {
+      dispatch(setAuthToken(res.result.token))
       toast("Успешная регистрация")
       setOpen(false)
     }

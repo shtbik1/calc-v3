@@ -6,9 +6,9 @@ import { API_ROUTES } from "@/utils/constants"
 
 type ResponseSuccess = Array<{ name: string; link: string }>
 
-type ResponseError = null
+type ResponseError = { error: string }
 
-export type FetchCarsResponse =
+type FetchDeleteFavoriteResponse =
   | { success: true; result: ResponseSuccess }
   | { success: false; result: ResponseError }
 
@@ -16,7 +16,9 @@ type PayloadData = {
   formulaLink: string
 }
 
-async function deleteFavorite(data: PayloadData): Promise<FetchCarsResponse> {
+async function deleteFavorite(
+  data: PayloadData,
+): Promise<FetchDeleteFavoriteResponse> {
   const response = await fetch(API_ROUTES.formulas.deleteFavorite, {
     method: "POST",
     headers: {
@@ -32,7 +34,7 @@ async function deleteFavorite(data: PayloadData): Promise<FetchCarsResponse> {
     return { success: true, result: res }
   }
 
-  return { success: false, result: null }
+  return { success: false, result: res }
 }
 
 export const useDeleteFavorite = () =>

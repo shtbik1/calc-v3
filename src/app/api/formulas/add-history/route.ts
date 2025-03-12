@@ -24,8 +24,8 @@ export async function POST(request: NextRequest) {
   const { formulaLink } = await request.json()
 
   const { data: existingData, error: fetchError } = await supabaseServ
-    .from("favourites")
-    .select("liked_formulas")
+    .from("history")
+    .select("history_formulas")
     .eq("user_id", decoded.user_id)
     .single()
 
@@ -33,26 +33,19 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
-  if (!existingData || !existingData.liked_formulas) {
-    return NextResponse.json({ error: "Запись не найдена" }, { status: 404 })
+  let updatedFormulas: { [key: string]: string } = {}
+
+  if (existingData && existingData.history_formulas) {
+    updatedFormulas = { ...existingData.history_formulas }
   }
 
-  const updatedFormulas = { ...existingData.liked_formulas }
+  updatedFormulas[formulaLink] = new Date().toISOString()
 
-  if (updatedFormulas[formulaLink]) {
-    delete updatedFormulas[formulaLink]
-  } else {
-    return NextResponse.json(
-      { error: "Формула не найдена в избранном" },
-      { status: 404 },
-    )
-  }
-
-  const { error: upsertError } = await supabaseServ.from("favourites").upsert(
+  const { error: upsertError } = await supabaseServ.from("history").upsert(
     {
       user_id: decoded.user_id,
       login: decoded.login,
-      liked_formulas: updatedFormulas,
+      history_formulas: updatedFormulas,
     },
     { onConflict: "user_id" },
   )

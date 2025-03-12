@@ -27,16 +27,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "expired" }, { status: 401 })
   }
 
-  const { data: existingData, error: fetchError } = await supabase
-    .from("favourites")
-    .select("liked_formulas")
+  const { data: historyData, error: fetchError } = await supabase
+    .from("history")
+    .select("history_formulas")
     .eq("user_id", decoded.user_id)
-    .eq("login", decoded.login)
     .single()
 
   if (fetchError && fetchError.code !== "PGRST116") {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
-  return NextResponse.json({ existingData })
+  return NextResponse.json({ history: historyData?.history_formulas || {} })
 }

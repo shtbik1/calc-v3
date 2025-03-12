@@ -4,6 +4,7 @@ import { ChangeEvent, useEffect, useState } from "react"
 
 import Cookies from "js-cookie"
 import { useRouter } from "next/navigation"
+import { useDispatch, useSelector } from "react-redux"
 import { toast } from "react-toastify"
 
 import { FormulaHolder } from "@/components/FormulaHolder"
@@ -12,11 +13,15 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useDeleteFavorite } from "@/hooks/useDeleteFavorite"
 import { useGetFavorite } from "@/hooks/useGetFavorite"
 import { useGetFormulas } from "@/hooks/useGetFormulas"
+import { useGetHistory } from "@/hooks/useGetHistory"
 import { useSendFavorite } from "@/hooks/useSendFavorite"
+import { RootState } from "@/store"
+import { setAuthToken } from "@/store/slices/authSlice"
 import { COOKIE_KEYS, ROUTES } from "@/utils/constants"
 
 const SearchPage = () => {
   const router = useRouter()
+  const dispatch = useDispatch()
 
   const { mutateAsync: getFormulas, isPending: getFormulasPending } =
     useGetFormulas()
@@ -24,6 +29,10 @@ const SearchPage = () => {
   const { mutateAsync: getFav, isPending: getFavPending } = useGetFavorite()
   const { mutateAsync: deleteFav, isPending: deleteFavPending } =
     useDeleteFavorite()
+  const { mutateAsync: getHistory, isPending: getHistoryPending } =
+    useGetHistory()
+
+  const authToken = useSelector((state: RootState) => state.authToken.authToken)
 
   const [formulas, setFormulas] = useState<
     Array<{ name: string; link: string }>
@@ -72,7 +81,7 @@ const SearchPage = () => {
         toast.success("Формула удалена из избранного")
       }
       if (!res.success) {
-        if (res.result === "unauthorized") {
+        if (res.result.error === "unauthorized") {
           {
             toast.error("Необходимо авторизоваться")
             return
@@ -88,7 +97,7 @@ const SearchPage = () => {
         toast.success("Формула добавлена в избранное")
       }
       if (!res.success) {
-        if (res.result === "unauthorized") {
+        if (res.result.error === "unauthorized") {
           {
             toast.error("Необходимо авторизоваться")
             return
@@ -116,6 +125,10 @@ const SearchPage = () => {
 
   useEffect(() => {
     ;(async () => {
+      const token = Cookies.get(COOKIE_KEYS.token)
+      if (token) {
+        dispatch(setAuthToken(token))
+      }
       const res = await getFormulas()
       if (res.success) {
         setFormulas(res.result)
@@ -128,19 +141,34 @@ const SearchPage = () => {
 
   useEffect(() => {
     ;(async () => {
-      if (Cookies.get(COOKIE_KEYS.token)) {
+      if (authToken) {
         const res = await getFav()
         if (res.success) {
           const likedFormulas = Object.keys(
-            res.result.existingData.liked_formulas,
+            res.result.existingData?.liked_formulas || {},
           )
           setFavoriteFormulas(likedFormulas)
         } else {
           setFavoriteFormulas([])
         }
       }
+      if (authToken === null) {
+        setFavoriteFormulas([])
+      }
     })()
-  }, [])
+  }, [authToken])
+
+  useEffect(() => {
+    ;(async () => {
+      if (authToken) {
+        const res = await getHistory()
+        console.log(res)
+      }
+      if (authToken === null) {
+        //
+      }
+    })()
+  }, [authToken])
 
   useEffect(() => {
     const sortedFormulas = sortFormulasWithFavorites(formulas, favoriteFormulas)

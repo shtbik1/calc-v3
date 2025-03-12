@@ -44,7 +44,6 @@ export async function POST(req: Request) {
     )
 
     const response = NextResponse.json({
-      success: true,
       user: { login: user.login },
       token,
     })

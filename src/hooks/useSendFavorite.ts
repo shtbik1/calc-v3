@@ -19,7 +19,7 @@ type PayloadData = {
 async function sendFavorite(
   data: PayloadData,
 ): Promise<FetchSendFavoriteResponse> {
-  const response = await fetch(API_ROUTES.formulas.addFavorite, {
+  const response = await fetch(API_ROUTES.formulas.favorite.add, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

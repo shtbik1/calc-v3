@@ -4,18 +4,17 @@ import { useMutation } from "@tanstack/react-query"
 
 import { API_ROUTES } from "@/utils/constants"
 
-type ResponseSuccess = { existingData: { [key: string]: true } }
+type ResponseSuccess = null
 
 type ResponseError = { error: string }
 
-type FetchGetFavoriteResponse =
+type FetchDeleteHistoryResponse =
   | { success: true; result: ResponseSuccess }
   | { success: false; result: ResponseError }
 
-async function getFavorite(): Promise<FetchGetFavoriteResponse> {
-  const response = await fetch(API_ROUTES.formulas.favorite.get, {
-    method: "GET",
-
+async function deleteHistory(): Promise<FetchDeleteHistoryResponse> {
+  const response = await fetch(API_ROUTES.formulas.history.delete, {
+    method: "DELETE",
     credentials: "same-origin",
   }).catch((error) => error)
 
@@ -28,7 +27,7 @@ async function getFavorite(): Promise<FetchGetFavoriteResponse> {
   return { success: false, result: res }
 }
 
-export const useGetFavorite = () =>
+export const useDeleteHistory = () =>
   useMutation({
-    mutationFn: () => getFavorite(),
+    mutationFn: () => deleteHistory(),
   })

@@ -2,56 +2,95 @@
 
 import React, { useEffect, useState } from "react"
 
-import { FormulaHolder } from "../FormulaHolder"
-import { useGetHistory } from "@/hooks/useGetHistory"
+import { useRouter } from "next/navigation"
+import { useDispatch, useSelector } from "react-redux"
 
-interface HistoryData {
-  [formulaName: string]: {
-    addedAt: string
-    formulaName: string
-  }
-}
+import { useGetHistory } from "@/hooks/useGetHistory"
+import { RootState } from "@/store"
+import { setClearHistoryAction } from "@/store/slices/actionsSlice"
+import { ROUTES } from "@/utils/constants"
+
+import { FormulaHolder } from "../FormulaHolder"
 
 export const HistoryViewer = () => {
+  const router = useRouter()
+  const dispatch = useDispatch()
   const { mutateAsync: getHistory, isPending } = useGetHistory()
-  const [history, setHistory] = useState<HistoryData>({})
+
+  const authToken = useSelector((state: RootState) => state.authToken.authToken)
+  const clearHistoryAction = useSelector(
+    (state: RootState) => state.actionsState.clearHistory,
+  )
+
+  const [sortedData, setSortedData] = useState<
+    Array<{ addedAt: string; formulaName: string; link: string }>
+  >([])
+
+  const handleFormulaClick = (
+    event: React.MouseEvent<HTMLDivElement>,
+    link: string,
+  ) => {
+    event?.stopPropagation()
+    router.push(ROUTES.formulas.root + "/" + link)
+  }
 
   useEffect(() => {
     ;(async () => {
-      const res = await getHistory()
-      if (res.success) {
-        setHistory(res.result.history)
+      if (authToken) {
+        const res = await getHistory()
+        if (res.success) {
+          setSortedData(
+            Object.entries(res.result.history)
+              .sort(
+                (a, b) =>
+                  new Date(b[1].addedAt).getTime() -
+                  new Date(a[1].addedAt).getTime(),
+              )
+              .map(([link, value]) => ({
+                link,
+                addedAt: value.addedAt,
+                formulaName: value.formulaName,
+              })),
+          )
+        }
+      }
+      if (authToken === null) {
+        setSortedData([])
       }
     })()
-  }, [getHistory])
+  }, [authToken])
 
-  const getSortedFormulas = () => {
-    return Object.entries(history).sort((a, b) => {
-      return new Date(b[1].addedAt).getTime() - new Date(a[1].addedAt).getTime()
-    })
-  }
+  useEffect(() => {
+    if (clearHistoryAction) {
+      setSortedData([])
+      dispatch(setClearHistoryAction(false))
+    }
+  }, [clearHistoryAction])
 
-  return (
-    <div className="flex gap-4 flex-col items-center">
-      <h2>Недавно посещенные</h2>
-      <div className="flex max-w-[707px] justify-center gap-4 flex-wrap">
-        {getSortedFormulas().map(([formulaLink, formulaData]) => (
-          <FormulaHolder
-            key={formulaLink}
-            formulaLink={formulaLink}
-            formulaName={formulaData.formulaName}
-            disabled={false}
-            hideFavorite
-            isFavorite={false}
-            handleFormulaClick={(event, link) => {
-              console.log("Formula clicked:", link)
-            }}
-            handleFavoriteClick={(event, link) => {
-              console.log("Favorite clicked:", link)
-            }}
-          />
-        ))}
+  if (!!sortedData.length) {
+    return (
+      <div className="flex gap-4 flex-col items-center">
+        <h2>Недавно посещенные</h2>
+        <div className="flex max-w-[707px] justify-center gap-4 flex-wrap">
+          {sortedData.map((item) => (
+            <FormulaHolder
+              key={item.link}
+              formulaLink={item.link}
+              formulaName={item.formulaName}
+              disabled={false}
+              hideFavorite
+              isFavorite={false}
+              handleFormulaClick={(event) =>
+                handleFormulaClick(event, item.link)
+              }
+              handleFavoriteClick={(event, link) => {
+                console.log("Favorite clicked:", link)
+              }}
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
+  return null
 }

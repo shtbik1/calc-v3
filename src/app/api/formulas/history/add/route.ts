@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken"
 import { NextRequest, NextResponse } from "next/server"
 
+import { JwtData } from "@/app/api/interface"
 import { COOKIE_KEYS } from "@/utils/constants"
 import { supabaseServ } from "@/utils/supabaseUser"
-
-import { JwtData } from "../../interface"
 
 const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 
@@ -21,11 +20,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_token" }, { status: 401 })
   }
 
-  const { formulaLink } = await request.json()
+  const { formulaLink, formulaName } = await request.json()
 
   const { data: existingData, error: fetchError } = await supabaseServ
-    .from("favourites")
-    .select("liked_formulas")
+    .from("history")
+    .select("history_formulas")
     .eq("user_id", decoded.user_id)
     .single()
 
@@ -33,19 +32,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
-  let updatedFormulas: { [key: string]: boolean } = {}
+  let updatedFormulas: {
+    [key: string]: { formulaName: string; addedAt: string }
+  } = {}
 
-  if (existingData && existingData.liked_formulas) {
-    updatedFormulas = { ...existingData.liked_formulas }
+  if (existingData && existingData.history_formulas) {
+    updatedFormulas = { ...existingData.history_formulas }
   }
 
-  updatedFormulas[formulaLink] = true
+  updatedFormulas[formulaLink] = {
+    formulaName,
+    addedAt: new Date().toISOString(),
+  }
 
-  const { error: upsertError } = await supabaseServ.from("favourites").upsert(
+  const { error: upsertError } = await supabaseServ.from("history").upsert(
     {
       user_id: decoded.user_id,
       login: decoded.login,
-      liked_formulas: updatedFormulas,
+      history_formulas: updatedFormulas,
     },
     { onConflict: "user_id" },
   )

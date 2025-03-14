@@ -15,7 +15,7 @@ type FetchGetHistoryResponse =
   | { success: false; result: ResponseError }
 
 async function getHistory(): Promise<FetchGetHistoryResponse> {
-  const response = await fetch(API_ROUTES.formulas.getHistory, {
+  const response = await fetch(API_ROUTES.formulas.history.get, {
     method: "GET",
     credentials: "same-origin",
   }).catch((error) => error)

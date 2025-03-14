@@ -4,9 +4,10 @@ import { NextResponse } from "next/server"
 
 import { supabaseServ } from "@/utils/supabaseUser"
 
+const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
+
 export async function POST(req: Request) {
   const body = await req.json()
-  const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 
   const { data: existingUser, error: fetchError } = await supabaseServ
     .from("users")

@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken"
 import { NextRequest, NextResponse } from "next/server"
 
+import { JwtData } from "@/app/api/interface"
 import { COOKIE_KEYS } from "@/utils/constants"
 import { supabaseServ } from "@/utils/supabaseUser"
-
-import { JwtData } from "../../interface"
 
 const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 
@@ -21,11 +20,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "invalid_token" }, { status: 401 })
   }
 
-  const { formulaLink, formulaName } = await request.json()
+  const { formulaLink } = await request.json()
 
   const { data: existingData, error: fetchError } = await supabaseServ
-    .from("history")
-    .select("history_formulas")
+    .from("favourites")
+    .select("liked_formulas")
     .eq("user_id", decoded.user_id)
     .single()
 
@@ -33,24 +32,26 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
-  let updatedFormulas: {
-    [key: string]: { formulaName: string; addedAt: string }
-  } = {}
-
-  if (existingData && existingData.history_formulas) {
-    updatedFormulas = { ...existingData.history_formulas }
+  if (!existingData || !existingData.liked_formulas) {
+    return NextResponse.json({ error: "Запись не найдена" }, { status: 404 })
   }
 
-  updatedFormulas[formulaLink] = {
-    formulaName,
-    addedAt: new Date().toISOString(),
+  const updatedFormulas = { ...existingData.liked_formulas }
+
+  if (updatedFormulas[formulaLink]) {
+    delete updatedFormulas[formulaLink]
+  } else {
+    return NextResponse.json(
+      { error: "Формула не найдена в избранном" },
+      { status: 404 },
+    )
   }
 
-  const { error: upsertError } = await supabaseServ.from("history").upsert(
+  const { error: upsertError } = await supabaseServ.from("favourites").upsert(
     {
       user_id: decoded.user_id,
       login: decoded.login,
-      history_formulas: updatedFormulas,
+      liked_formulas: updatedFormulas,
     },
     { onConflict: "user_id" },
   )

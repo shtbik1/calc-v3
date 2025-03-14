@@ -20,7 +20,7 @@ type PayloadData = {
 async function sendHistory(
   data: PayloadData,
 ): Promise<FetchSendHistoryResponse> {
-  const response = await fetch(API_ROUTES.formulas.addHistory, {
+  const response = await fetch(API_ROUTES.formulas.history.add, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

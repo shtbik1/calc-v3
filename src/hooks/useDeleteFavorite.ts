@@ -19,7 +19,7 @@ type PayloadData = {
 async function deleteFavorite(
   data: PayloadData,
 ): Promise<FetchDeleteFavoriteResponse> {
-  const response = await fetch(API_ROUTES.formulas.deleteFavorite, {
+  const response = await fetch(API_ROUTES.formulas.favorite.delete, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

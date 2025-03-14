@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken"
 import { NextRequest, NextResponse } from "next/server"
 
+import { JwtData } from "@/app/api/interface"
 import { COOKIE_KEYS } from "@/utils/constants"
 import { supabase } from "@/utils/supabaseUser"
-
-import { JwtData } from "../../interface"
 
 const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 

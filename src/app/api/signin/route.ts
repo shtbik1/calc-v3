@@ -3,13 +3,13 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { NextResponse } from "next/server"
 
+import { User } from "@/app/api/interface"
 import { supabaseServ } from "@/utils/supabaseUser"
 
-import { User } from "../interface"
+const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 
 export async function POST(req: Request) {
   const body = await req.json()
-  const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 
   const {
     data: user,

@@ -4,16 +4,18 @@ import { useMutation } from "@tanstack/react-query"
 
 import { API_ROUTES } from "@/utils/constants"
 
-type ResponseSuccess = { existingData: { [key: string]: true } }
+type ResponseSuccess = {
+  login: string
+}
 
 type ResponseError = { error: string }
 
-type FetchGetFavoriteResponse =
+type FetchGetProfileInfoResponse =
   | { success: true; result: ResponseSuccess }
   | { success: false; result: ResponseError }
 
-async function getFavorite(): Promise<FetchGetFavoriteResponse> {
-  const response = await fetch(API_ROUTES.formulas.favorite.get, {
+async function getProfileInfo(): Promise<FetchGetProfileInfoResponse> {
+  const response = await fetch(API_ROUTES.profile.getInfo, {
     method: "GET",
 
     credentials: "same-origin",
@@ -28,7 +30,7 @@ async function getFavorite(): Promise<FetchGetFavoriteResponse> {
   return { success: false, result: res }
 }
 
-export const useGetFavorite = () =>
+export const useGetProfileInfo = () =>
   useMutation({
-    mutationFn: () => getFavorite(),
+    mutationFn: () => getProfileInfo(),
   })

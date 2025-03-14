@@ -1,10 +1,9 @@
 import jwt from "jsonwebtoken"
 import { NextRequest, NextResponse } from "next/server"
 
+import { JwtData } from "@/app/api/interface"
 import { COOKIE_KEYS } from "@/utils/constants"
 import { supabaseServ } from "@/utils/supabaseUser"
-
-import { JwtData } from "../../interface"
 
 const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 
@@ -33,20 +32,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: fetchError.message }, { status: 500 })
   }
 
-  if (!existingData || !existingData.liked_formulas) {
-    return NextResponse.json({ error: "Запись не найдена" }, { status: 404 })
+  let updatedFormulas: { [key: string]: boolean } = {}
+
+  if (existingData && existingData.liked_formulas) {
+    updatedFormulas = { ...existingData.liked_formulas }
   }
 
-  const updatedFormulas = { ...existingData.liked_formulas }
-
-  if (updatedFormulas[formulaLink]) {
-    delete updatedFormulas[formulaLink]
-  } else {
-    return NextResponse.json(
-      { error: "Формула не найдена в избранном" },
-      { status: 404 },
-    )
-  }
+  updatedFormulas[formulaLink] = true
 
   const { error: upsertError } = await supabaseServ.from("favourites").upsert(
     {

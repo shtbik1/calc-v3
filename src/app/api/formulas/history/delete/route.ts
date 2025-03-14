@@ -1,14 +1,13 @@
 import jwt from "jsonwebtoken"
 import { NextRequest, NextResponse } from "next/server"
 
+import { JwtData } from "@/app/api/interface"
 import { COOKIE_KEYS } from "@/utils/constants"
-import { supabase } from "@/utils/supabaseUser"
-
-import { JwtData } from "../../interface"
+import { supabaseServ } from "@/utils/supabaseUser"
 
 const SECRET_JWT = process.env.NEXT_JWT_SECRET as string
 
-export async function GET(request: NextRequest) {
+export async function DELETE(request: NextRequest) {
   const cookie = request.cookies.get(COOKIE_KEYS.token)
 
   if (!cookie || !cookie.value) {
@@ -27,15 +26,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "expired" }, { status: 401 })
   }
 
-  const { data: historyData, error: fetchError } = await supabase
+  const { error: deleteError } = await supabaseServ
     .from("history")
-    .select("history_formulas")
+    .delete()
     .eq("user_id", decoded.user_id)
-    .single()
 
-  if (fetchError && fetchError.code !== "PGRST116") {
-    return NextResponse.json({ error: fetchError.message }, { status: 500 })
+  if (deleteError) {
+    return NextResponse.json({ error: deleteError.message }, { status: 500 })
   }
 
-  return NextResponse.json({ history: historyData?.history_formulas || {} })
+  return NextResponse.json({})
 }

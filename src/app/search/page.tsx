@@ -14,7 +14,6 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useDeleteFavorite } from "@/hooks/useDeleteFavorite"
 import { useGetFavorite } from "@/hooks/useGetFavorite"
 import { useGetFormulas } from "@/hooks/useGetFormulas"
-import { useGetHistory } from "@/hooks/useGetHistory"
 import { useSendFavorite } from "@/hooks/useSendFavorite"
 import { RootState } from "@/store"
 import { setAuthToken } from "@/store/slices/authSlice"
@@ -30,8 +29,6 @@ const SearchPage = () => {
   const { mutateAsync: getFav, isPending: getFavPending } = useGetFavorite()
   const { mutateAsync: deleteFav, isPending: deleteFavPending } =
     useDeleteFavorite()
-  const { mutateAsync: getHistory, isPending: getHistoryPending } =
-    useGetHistory()
 
   const authToken = useSelector((state: RootState) => state.authToken.authToken)
 
@@ -160,18 +157,6 @@ const SearchPage = () => {
   }, [authToken])
 
   useEffect(() => {
-    ;(async () => {
-      if (authToken) {
-        const res = await getHistory()
-        console.log(res)
-      }
-      if (authToken === null) {
-        //
-      }
-    })()
-  }, [authToken])
-
-  useEffect(() => {
     const sortedFormulas = sortFormulasWithFavorites(formulas, favoriteFormulas)
     setFilteredFormulas(sortedFormulas)
   }, [favoriteFormulas, formulas])
@@ -203,8 +188,12 @@ const SearchPage = () => {
               key={formula.link}
               formulaLink={formula.link}
               formulaName={formula.name}
-              handleFormulaClick={handleFormulaClick}
-              handleFavoriteClick={handleFavoriteClick}
+              handleFormulaClick={(event) =>
+                handleFormulaClick(event, formula.link)
+              }
+              handleFavoriteClick={(event) =>
+                handleFavoriteClick(event, formula.link)
+              }
               isFavorite={favoriteFormulas.includes(formula.link)}
             />
           ))}

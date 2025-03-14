@@ -14,14 +14,16 @@ export const ROUTES = {
 }
 
 export const API = "/api"
+export const API_AUTH = API + "/auth"
 export const API_FORMULAS = API + "/formulas"
 export const API_PROFILE = API + "/profile"
 export const API_FORMULAS_HISTORY = API_FORMULAS + "/history"
 export const API_FORMULAS_FAVORITE = API_FORMULAS + "/favorite"
 export const API_ROUTES = {
   auth: {
-    signup: `${API}/signup`,
-    signin: `${API}/signin`,
+    root: API_AUTH,
+    signup: `${API_AUTH}/signup`,
+    signin: `${API_AUTH}/signin`,
   },
   profile: {
     root: API_PROFILE,

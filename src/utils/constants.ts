@@ -19,6 +19,7 @@ export const API_FORMULAS = API + "/formulas"
 export const API_PROFILE = API + "/profile"
 export const API_FORMULAS_HISTORY = API_FORMULAS + "/history"
 export const API_FORMULAS_FAVORITE = API_FORMULAS + "/favorite"
+export const API_FORMULAS_FILTERS = API_FORMULAS + "/filters"
 export const API_ROUTES = {
   auth: {
     root: API_AUTH,
@@ -34,15 +35,21 @@ export const API_ROUTES = {
     getFormulas: API_FORMULAS,
     history: {
       root: API_FORMULAS_HISTORY,
-      add: `${API_FORMULAS_HISTORY}/add`,
-      get: `${API_FORMULAS_HISTORY}/get`,
-      delete: `${API_FORMULAS_HISTORY}/delete`,
+      add: `${API_FORMULAS_HISTORY}/add-history`,
+      get: `${API_FORMULAS_HISTORY}/get-history`,
+      delete: `${API_FORMULAS_HISTORY}/delete-history`,
+    },
+    filters: {
+      root: API_FORMULAS_FILTERS,
+      add: `${API_FORMULAS_FILTERS}/add-filter`,
+      get: `${API_FORMULAS_FILTERS}/get-filter`,
+      delete: `${API_FORMULAS_FILTERS}/delete-filter`,
     },
     favorite: {
       root: API_FORMULAS_FAVORITE,
-      add: `${API_FORMULAS_FAVORITE}/add`,
-      get: `${API_FORMULAS_FAVORITE}/get`,
-      delete: `${API_FORMULAS_FAVORITE}/delete`,
+      add: `${API_FORMULAS_FAVORITE}/add-favorite`,
+      get: `${API_FORMULAS_FAVORITE}/get-favorite`,
+      delete: `${API_FORMULAS_FAVORITE}/delete-favorite`,
     },
   },
 }

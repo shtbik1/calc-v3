@@ -17,7 +17,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useDeleteHistory } from "@/hooks/useDeleteHistory"
+import { useDeleteHistory } from "@/hooks/history/useDeleteHistory"
 import { useGetProfileInfo } from "@/hooks/useGetProfileInfo"
 import { setClearHistoryAction } from "@/store/slices/actionsSlice"
 import { setAuthToken } from "@/store/slices/authSlice"

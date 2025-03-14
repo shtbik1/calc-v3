@@ -9,12 +9,14 @@ export type Formula = {
   reverse?: Record<string, (values: Partial<Record<string, number>>) => number>
   units?: Record<string, string[]>
   conversionFactors?: Record<string, Record<string, number>>
+  category: string
 }
 
 export const formulas: Record<string, Formula> = {
   gravity: {
     id: "gravity",
     name: "Сила тяжести",
+    category: "Механика",
     variables: [
       { key: "F", name: "Сила", unit: "Н" },
       { key: "m", name: "Масса", unit: "Кг" },
@@ -55,6 +57,7 @@ export const formulas: Record<string, Formula> = {
   kinetic_energy: {
     id: "kinetic_energy",
     name: "Кинетическая энергия",
+    category: "Механика",
     variables: [
       { key: "E", name: "Энергия", unit: "Дж" },
       { key: "m", name: "Масса", unit: "Кг" },
@@ -106,6 +109,7 @@ export const formulas: Record<string, Formula> = {
   potential_energy: {
     id: "potential_energy",
     name: "Потенциальная энергия",
+    category: "Механика",
     variables: [
       { key: "E", name: "Энергия", unit: "Дж" },
       { key: "m", name: "Масса", unit: "Кг" },
@@ -160,6 +164,7 @@ export const formulas: Record<string, Formula> = {
   ohms_law: {
     id: "ohms_law",
     name: "Закон Ома",
+    category: "Электродинамика",
     variables: [
       { key: "V", name: "Напряжение", unit: "В" },
       { key: "I", name: "Ток", unit: "А" },
@@ -210,6 +215,7 @@ export const formulas: Record<string, Formula> = {
   work: {
     id: "work",
     name: "Работа",
+    category: "Механика",
     variables: [
       { key: "A", name: "Работа", unit: "Дж" },
       { key: "F", name: "Сила", unit: "Н" },
@@ -266,6 +272,7 @@ export const formulas: Record<string, Formula> = {
   power: {
     id: "power",
     name: "Мощность",
+    category: "Механика",
     variables: [
       { key: "P", name: "Мощность", unit: "Вт" },
       { key: "A", name: "Работа", unit: "Дж" },
@@ -316,6 +323,7 @@ export const formulas: Record<string, Formula> = {
   speed: {
     id: "speed",
     name: "Скорость",
+    category: "Кинематика",
     variables: [
       { key: "v", name: "Скорость", unit: "м/с" },
       { key: "d", name: "Расстояние", unit: "м" },
@@ -366,6 +374,7 @@ export const formulas: Record<string, Formula> = {
   density: {
     id: "density",
     name: "Плотность",
+    category: "Механика",
     variables: [
       { key: "rho", name: "Плотность", unit: "Кг/м³" },
       { key: "m", name: "Масса", unit: "Кг" },

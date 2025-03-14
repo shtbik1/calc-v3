@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useSendHistory } from "@/hooks/useSendHistory"
+import { useSendHistory } from "@/hooks/history/useSendHistory"
 import { getFormula, calculateVariable } from "@/utils/formulas"
 
 const FormulaPage = (props: { params: Promise<{ id: string }> }) => {

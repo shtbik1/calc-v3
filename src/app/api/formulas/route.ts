@@ -5,7 +5,7 @@ import { supabase } from "@/utils/supabaseUser"
 export async function GET() {
   const { data, error } = await supabase
     .from("formulas_names")
-    .select("name, link")
+    .select("name, link, category")
 
   if (error) {
     return NextResponse.error()

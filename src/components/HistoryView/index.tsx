@@ -5,7 +5,7 @@ import React, { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useDispatch, useSelector } from "react-redux"
 
-import { useGetHistory } from "@/hooks/useGetHistory"
+import { useGetHistory } from "@/hooks/history/useGetHistory"
 import { RootState } from "@/store"
 import { setClearHistoryAction } from "@/store/slices/actionsSlice"
 import { ROUTES } from "@/utils/constants"
@@ -69,7 +69,7 @@ export const HistoryViewer = () => {
 
   if (!!sortedData.length) {
     return (
-      <div className="flex gap-4 flex-col items-center">
+      <div className="flex gap-2 flex-col items-center">
         <h2>Недавно посещенные</h2>
         <div className="flex max-w-[707px] justify-center gap-4 flex-wrap">
           {sortedData.map((item) => (

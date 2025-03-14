@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useSignin } from "@/hooks/useSignin"
-import { useSignup } from "@/hooks/useSignup"
+import { useSignin } from "@/hooks/auth/useSignin"
+import { useSignup } from "@/hooks/auth/useSignup"
 import { setAuthToken } from "@/store/slices/authSlice"
 
 export const LoginDialog = ({

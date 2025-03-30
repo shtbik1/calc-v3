@@ -11,8 +11,7 @@ import { Input } from "@/components/ui/input"
 export default function ReceiverPage() {
   const [file, setFile] = useState<File | null>(null)
   const [signature, setSignature] = useState("")
-  const [encryptionKey, setEncryptionKey] = useState("")
-  const [iv, setIv] = useState("")
+  const [encryptedKeyData, setEncryptedKeyData] = useState("")
   const [loading, setLoading] = useState(false)
   const [result, setResult] = useState<{
     valid: boolean
@@ -30,7 +29,7 @@ export default function ReceiverPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!file || !signature || !encryptionKey || !iv) {
+    if (!file || !signature || !encryptedKeyData) {
       setResult({
         valid: false,
         message: "Please fill in all fields",
@@ -43,8 +42,7 @@ export default function ReceiverPage() {
       const formData = new FormData()
       formData.append("file", file)
       formData.append("signature", signature)
-      formData.append("encryptionKey", encryptionKey)
-      formData.append("iv", iv)
+      formData.append("encryptedKeyData", encryptedKeyData)
 
       const response = await fetch("/api/verify", {
         method: "POST",
@@ -95,24 +93,12 @@ export default function ReceiverPage() {
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Encryption Key</label>
+              <label className="text-sm font-medium">Encrypted Key Data</label>
               <Input
                 type="text"
-                value={encryptionKey}
-                onChange={(e) => setEncryptionKey(e.target.value)}
-                placeholder="Enter encryption key"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">
-                Initialization Vector (IV)
-              </label>
-              <Input
-                type="text"
-                value={iv}
-                onChange={(e) => setIv(e.target.value)}
-                placeholder="Enter IV"
+                value={encryptedKeyData}
+                onChange={(e) => setEncryptedKeyData(e.target.value)}
+                placeholder="Enter encrypted key data"
                 required
               />
             </div>

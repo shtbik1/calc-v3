@@ -36,24 +36,51 @@ export async function POST(request: Request) {
     // Читаем содержимое файла
     const buffer = Buffer.from(await file.arrayBuffer())
 
-    // Создаем рандомный ключ шифрования
-    const key = crypto.randomBytes(32)
-    const iv = crypto.randomBytes(16)
+    // блок подписи:
+    // const sign - это объект подписи, который использует алгоритм SHA256
+    // update(buffer) - дает данные для подписи
+    // sign.sign - создает подпись с использованием приватного ключа
 
-    // Шифруем файл
-    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv)
-    const encrypted = Buffer.concat([cipher.update(buffer), cipher.final()])
-
-    // Создаем ЭЦП
     const sign = crypto.createSign("SHA256")
     sign.update(buffer)
 
-    // Декодируем приватный ключ из base64
     const privateKeyBuffer = Buffer.from(
       process.env.NEXT_PRIVATE_KEY || "",
       "base64",
     )
     const signature = sign.sign(privateKeyBuffer)
+    // блок подписи конец
+
+    // блок шифрования файла:
+    // const key - это случайный ключ шифрования
+    // const iv - это случайный вектор инициализации
+    // crypto.createCipheriv - создает объект шифрования
+    // cipher.update - шифрует данные
+    // cipher.final - завершает шифрование
+    // Buffer.concat - объединяет зашифрованные данные
+    const key = crypto.randomBytes(32)
+    const iv = crypto.randomBytes(16)
+
+    const cipher = crypto.createCipheriv("aes-256-cbc", key, iv)
+    const encrypted = Buffer.concat([cipher.update(buffer), cipher.final()])
+    // блок шифрования файла конец
+
+    // Создаем объект с ключом шифрования и IV
+    const encryptionData = {
+      key: key.toString("base64"),
+      iv: iv.toString("base64"),
+    }
+
+    const publicKeyBuffer = Buffer.from(
+      process.env.NEXT_PUBLIC_KEY || "",
+      "base64",
+    )
+
+    // Шифруем данные ключа и IV с помощью открытого ключа
+    const encryptedData = crypto.publicEncrypt(
+      publicKeyBuffer,
+      Buffer.from(JSON.stringify(encryptionData)),
+    )
 
     // Сохраняем зашифрованный файл во временную директорию
     const tempPath = join(tmpdir(), `encrypted-${Date.now()}.bin`)
@@ -64,12 +91,11 @@ export async function POST(request: Request) {
       from: process.env.NEXT_SMTP_USER,
       to: email,
       subject: "Encrypted File with Digital Signature",
-      text: `Please find attached the encrypted file and its digital signature.\n\nDigital Signature: ${signature.toString("base64")}\nEncryption Key: ${key.toString("base64")}\nIV: ${iv.toString("base64")}`,
+      text: `Please find attached the encrypted file and its digital signature.\n\nDigital Signature: ${signature.toString("base64")}\nEncrypted Key Data: ${encryptedData.toString("base64")}`,
       html: `
         <p>Please find attached the encrypted file and its digital signature.</p>
         <p><strong>Digital Signature:</strong> ${signature.toString("base64")}</p>
-        <p><strong>Encryption Key:</strong> ${key.toString("base64")}</p>
-        <p><strong>IV:</strong> ${iv.toString("base64")}</p>
+        <p><strong>Encrypted Key Data:</strong> ${encryptedData.toString("base64")}</p>
       `,
       attachments: [
         {

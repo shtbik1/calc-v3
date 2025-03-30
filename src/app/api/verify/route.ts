@@ -23,38 +23,10 @@ export async function POST(request: Request) {
     const encryptedBuffer = Buffer.from(await file.arrayBuffer())
 
     try {
-      // Расшифровываем данные ключа
-      const privateKeyBuffer = Buffer.from(
-        process.env.NEXT_PRIVATE_KEY || "",
-        "base64",
-      )
-      const decryptedKeyData = crypto.privateDecrypt(
-        privateKeyBuffer,
-        Buffer.from(encryptedKeyData, "base64"),
-      )
-
-      // Парсим данные ключа и IV
-      const { key, iv } = JSON.parse(decryptedKeyData.toString())
-
-      // Расшифровываем файл
-      const keyBuffer = Buffer.from(key, "base64")
-      const ivBuffer = Buffer.from(iv, "base64")
-
-      const decipher = crypto.createDecipheriv(
-        "aes-256-cbc",
-        keyBuffer,
-        ivBuffer,
-      )
-      const decrypted = Buffer.concat([
-        decipher.update(encryptedBuffer),
-        decipher.final(),
-      ])
-
-      // Проверяем ЭЦП оригинального файла
+      // Сначала проверяем подпись зашифрованного файла
       const verify = crypto.createVerify("SHA256")
-      verify.update(decrypted)
+      verify.update(encryptedBuffer)
 
-      // Декодируем публичный ключ из base64
       const publicKeyBuffer = Buffer.from(
         process.env.NEXT_PUBLIC_KEY || "",
         "base64",
@@ -67,7 +39,68 @@ export async function POST(request: Request) {
       if (!isValid) {
         return NextResponse.json({
           valid: false,
-          message: "Digital signature verification failed",
+          message:
+            "Digital signature verification failed. The encrypted file might have been tampered with.",
+          error: "Invalid signature",
+        })
+      }
+
+      // Если подпись верна, расшифровываем данные ключа
+      const privateKeyBuffer = Buffer.from(
+        process.env.NEXT_PRIVATE_KEY || "",
+        "base64",
+      )
+      let decryptedKeyData: Buffer
+      try {
+        decryptedKeyData = crypto.privateDecrypt(
+          privateKeyBuffer,
+          Buffer.from(encryptedKeyData, "base64"),
+        )
+      } catch (error) {
+        return NextResponse.json({
+          valid: false,
+          message:
+            "Failed to decrypt key data. Please check if the encrypted key data is correct.",
+          error: "Invalid encrypted key data format",
+        })
+      }
+
+      // Парсим данные ключа и IV
+      let key: string, iv: string
+      try {
+        const parsedData = JSON.parse(decryptedKeyData.toString())
+        key = parsedData.key
+        iv = parsedData.iv
+      } catch (error) {
+        return NextResponse.json({
+          valid: false,
+          message:
+            "Invalid key data format. The decrypted data is not in the expected format.",
+          error: "Invalid key data structure",
+        })
+      }
+
+      // Расшифровываем файл
+      const keyBuffer = Buffer.from(key, "base64")
+      const ivBuffer = Buffer.from(iv, "base64")
+
+      let decrypted: Buffer
+      try {
+        const decipher = crypto.createDecipheriv(
+          "aes-256-cbc",
+          keyBuffer,
+          ivBuffer,
+        )
+        decrypted = Buffer.concat([
+          decipher.update(encryptedBuffer),
+          decipher.final(),
+        ])
+      } catch (error) {
+        return NextResponse.json({
+          valid: false,
+          message:
+            "Failed to decrypt file. The encryption key or IV might be incorrect.",
+          error: "File decryption failed",
         })
       }
 
@@ -87,7 +120,8 @@ export async function POST(request: Request) {
       return NextResponse.json({
         valid: false,
         message:
-          "Failed to decrypt file. Please check if the encrypted key data is correct.",
+          "Failed to process file. Please check if all provided data is correct.",
+        error: "Processing error",
       })
     }
   } catch (error) {

@@ -36,21 +36,6 @@ export async function POST(request: Request) {
     // Читаем содержимое файла
     const buffer = Buffer.from(await file.arrayBuffer())
 
-    // блок подписи:
-    // const sign - это объект подписи, который использует алгоритм SHA256
-    // update(buffer) - дает данные для подписи
-    // sign.sign - создает подпись с использованием приватного ключа
-
-    const sign = crypto.createSign("SHA256")
-    sign.update(buffer)
-
-    const privateKeyBuffer = Buffer.from(
-      process.env.NEXT_PRIVATE_KEY || "",
-      "base64",
-    )
-    const signature = sign.sign(privateKeyBuffer)
-    // блок подписи конец
-
     // блок шифрования файла:
     // const key - это случайный ключ шифрования
     // const iv - это случайный вектор инициализации
@@ -64,6 +49,21 @@ export async function POST(request: Request) {
     const cipher = crypto.createCipheriv("aes-256-cbc", key, iv)
     const encrypted = Buffer.concat([cipher.update(buffer), cipher.final()])
     // блок шифрования файла конец
+
+    // блок подписи:
+    // const sign - это объект подписи, который использует алгоритм SHA256
+    // update(buffer) - дает данные для подписи
+    // sign.sign - создает подпись с использованием приватного ключа
+
+    const sign = crypto.createSign("SHA256")
+    sign.update(encrypted)
+
+    const privateKeyBuffer = Buffer.from(
+      process.env.NEXT_PRIVATE_KEY || "",
+      "base64",
+    )
+    const signature = sign.sign(privateKeyBuffer)
+    // блок подписи конец
 
     // Создаем объект с ключом шифрования и IV
     const encryptionData = {

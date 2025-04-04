@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/currency-sync",
+      "schedule": "*/15 * * * *"
+    }
+  ]
+}

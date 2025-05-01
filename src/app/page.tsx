@@ -1,13 +1,15 @@
 "use client"
 
+import { useEffect } from "react"
+
 import { useRouter } from "next/navigation"
+
+import { ROUTES } from "@/utils/constants"
 
 export default function HomePage() {
   const router = useRouter()
 
-  return (
-    <div>
-      <h1>Home</h1>
-    </div>
-  )
+  useEffect(() => {
+    router.replace(ROUTES.search.root)
+  }, [])
 }

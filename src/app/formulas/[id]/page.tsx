@@ -3,8 +3,18 @@
 import { use, useEffect, useState } from "react"
 
 import { MathJax } from "better-react-mathjax"
+import Image from "next/image"
+import { useSelector } from "react-redux"
 
 import { Button } from "@/components/ui/button"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import {
   Select,
@@ -17,6 +27,7 @@ import {
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSendHistory } from "@/hooks/history/useSendHistory"
+import { RootState } from "@/store"
 import { getFormula, calculateVariable } from "@/utils/formulas"
 
 const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
@@ -24,6 +35,8 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
   const { id } = params
 
   const formula = getFormula(id)
+
+  const authToken = useSelector((state: RootState) => state.authToken.authToken)
 
   const { mutateAsync: sendHistory, isPending: sendHistoryPending } =
     useSendHistory()
@@ -116,12 +129,14 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
 
   useEffect(() => {
     ;(async () => {
-      await sendHistory({
-        formulaLink: formula?.id as string,
-        formulaName: formula?.name as string,
-      })
+      if (authToken) {
+        await sendHistory({
+          formulaLink: formula?.id as string,
+          formulaName: formula?.name as string,
+        })
+      }
     })()
-  }, [])
+  }, [authToken])
 
   if (!formula) return <div>Формула не найдена</div>
 
@@ -133,6 +148,65 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
         {!displayFormula && <Skeleton className="w-[200px] h-[24px]" />}
         {displayFormula && <MathJax>{formula.formulaViewMathJax}</MathJax>}
       </div>
+
+      {formula.picture && (
+        <div className="relative w-full h-[200px]">
+          <Image
+            src={formula.picture}
+            alt={formula.name}
+            fill
+            className="object-contain"
+          />
+        </div>
+      )}
+
+      {formula.example && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button variant="outline">Пример задачи</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{formula.example.title}</DialogTitle>
+              <DialogDescription>
+                {formula.example.description}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-4">
+              <div>
+                <h3 className="font-semibold mb-2">Дано:</h3>
+                {Object.entries(formula.example.values).map(([key, value]) => {
+                  const variable = formula.variables.find((v) => v.key === key)
+                  return (
+                    <p key={key} className="flex gap-2 items-center">
+                      <MathJax>{`\\(${key}\\)`}</MathJax> = {value}{" "}
+                      {variable?.unit}
+                    </p>
+                  )
+                })}
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Решение:</h3>
+                <div className="whitespace-pre-line">
+                  <MathJax>{formula.example.solution}</MathJax>
+                </div>
+              </div>
+              <div>
+                <h3 className="font-semibold mb-2">Ответ:</h3>
+                <p className="flex gap-2 items-center">
+                  <MathJax>{`\\(${formula.example?.targetVariable}\\)`}</MathJax>{" "}
+                  = {formula.example.result}{" "}
+                  {
+                    formula.variables.find(
+                      (v) => v.key === formula.example?.targetVariable,
+                    )?.unit
+                  }
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <label>Выберите переменную, которую хотите найти:</label>
       <Select value={targetVariable} onValueChange={handleTargetVariableChange}>
@@ -210,8 +284,8 @@ const FormulaPage = (props: { params: Promise<{ id: string }> }) => {
 
       {result !== null && targetVariableInfo && (
         <p>
-          Результат: {targetVariableInfo.name} = {result}{" "}
-          {targetVariableInfo.unit ?? ""}
+          Результат: {targetVariableInfo.name} ={" "}
+          {result.toString().replace(".", ",")} {targetVariableInfo.unit ?? ""}
         </p>
       )}
     </div>

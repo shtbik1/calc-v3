@@ -16,10 +16,10 @@ import { useDeleteFavorite } from "@/hooks/favorite/useDeleteFavorite"
 import { useGetFavorite } from "@/hooks/favorite/useGetFavorite"
 import { useSendFavorite } from "@/hooks/favorite/useSendFavorite"
 import { useGetFilters } from "@/hooks/filters/useGetFilters"
-import { useGetFormulas } from "@/hooks/useGetFormulas"
 import { RootState } from "@/store"
 import { setAuthToken } from "@/store/slices/authSlice"
 import { COOKIE_KEYS, ROUTES } from "@/utils/constants"
+import { formulas } from "@/utils/formulas"
 
 type FormulaProps = { name: string; link: string; category: string }
 
@@ -27,8 +27,6 @@ const SearchPage = () => {
   const router = useRouter()
   const dispatch = useDispatch()
 
-  const { mutateAsync: getFormulas, isPending: getFormulasPending } =
-    useGetFormulas()
   const { mutateAsync: sendFav, isPending: sendFavPending } = useSendFavorite()
   const { mutateAsync: getFav, isPending: getFavPending } = useGetFavorite()
   const { mutateAsync: deleteFav, isPending: deleteFavPending } =
@@ -38,7 +36,7 @@ const SearchPage = () => {
 
   const authToken = useSelector((state: RootState) => state.authToken.authToken)
 
-  const [formulas, setFormulas] = useState<Array<FormulaProps>>([])
+  const [formulasList, setFormulasList] = useState<Array<FormulaProps>>([])
   const [searchValue, setSearchValue] = useState<string>("")
   const [filteredFormulas, setFilteredFormulas] = useState<Array<FormulaProps>>(
     [],
@@ -49,14 +47,14 @@ const SearchPage = () => {
     [key: number]: Array<string>
   }>({})
 
-  const isPending = getFormulasPending || getFavPending
+  const isPending = getFavPending
 
   const handleSearchValueChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value
     setSearchValue(value)
 
     const lowerCaseValue = value.toLowerCase()
-    let filtered = formulas.filter((item) =>
+    let filtered = formulasList.filter((item) =>
       item.name.toLowerCase().includes(lowerCaseValue),
     )
 
@@ -141,18 +139,25 @@ const SearchPage = () => {
       if (token) {
         dispatch(setAuthToken(token))
       }
-      const res = await getFormulas()
-      if (res.success) {
-        setFormulas(res.result)
-        setFilteredFormulas(
-          sortFormulasWithFavorites(res.result, favoriteFormulas),
-        )
-      }
+
+      const formulasArray = Object.values(formulas).map((formula) => ({
+        name: formula.name,
+        link: formula.id,
+        category: formula.category,
+      }))
+
+      setFormulasList(formulasArray)
+      setFilteredFormulas(
+        sortFormulasWithFavorites(formulasArray, favoriteFormulas),
+      )
     })()
   }, [])
 
   useEffect(() => {
-    let sortedFormulas = sortFormulasWithFavorites(formulas, favoriteFormulas)
+    let sortedFormulas = sortFormulasWithFavorites(
+      formulasList,
+      favoriteFormulas,
+    )
     if (filterGroup.length > 0) {
       sortedFormulas = sortedFormulas.filter((formula) => {
         return filterGroup.includes(formula.category)
@@ -161,7 +166,7 @@ const SearchPage = () => {
 
     setFilteredFormulas(sortedFormulas)
     sortedFormulas = []
-  }, [filterGroup, favoriteFormulas, formulas])
+  }, [filterGroup, favoriteFormulas, formulasList])
 
   useEffect(() => {
     ;(async () => {
@@ -199,9 +204,12 @@ const SearchPage = () => {
   }, [authToken])
 
   useEffect(() => {
-    const sortedFormulas = sortFormulasWithFavorites(formulas, favoriteFormulas)
+    const sortedFormulas = sortFormulasWithFavorites(
+      formulasList,
+      favoriteFormulas,
+    )
     setFilteredFormulas(sortedFormulas)
-  }, [favoriteFormulas, formulas])
+  }, [favoriteFormulas, formulasList])
 
   return (
     <div className="w-full flex flex-col items-center gap-4 justify-center p-4">
